@@ -1,0 +1,22 @@
+{
+  "name": "monada-core",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/core.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gumvic/monada-core.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gumvic/monada-core/issues"
+  },
+  "homepage": "https://github.com/gumvic/monada-core#readme",
+  "dependencies": {
+    "immutable": "^3.8.2"
+  }
+}
