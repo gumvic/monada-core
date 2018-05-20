@@ -181,10 +181,10 @@ function $for(coll) {
     }
     r = xf(r);
   }
-  let res = f();
+  let res = r();
   for(let x of coll) {
   	res = r(res, x);
-    if (res instanceof Done) {
+    if (isDone(res)) {
       res = res.value;
       break;
     }
