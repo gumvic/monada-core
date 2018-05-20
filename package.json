@@ -2,9 +2,10 @@
   "name": "monada-core",
   "version": "0.0.1",
   "description": "",
-  "main": "src/core.js",
+  "main": "dist/core.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "monada src dist -o '{}'"
   },
   "repository": {
     "type": "git",

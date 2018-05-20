@@ -1,6 +1,6 @@
 module core
 
-import {
+import core.native {
   type,
   isa,
   dontPanic,
@@ -36,7 +36,7 @@ import {
   ImMap,
   get,
   getIn
-} from core.native
+}
 
 export {
   type,
