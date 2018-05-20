@@ -1,6 +1,6 @@
 module core
 
-import core.native {
+import ./native/core {
   type,
   isa,
   dontPanic,
@@ -66,15 +66,12 @@ let filter f ->
 let filter f coll ->
   for coll (filter f)
 
-let isError x -> false
-
 let isPromise { then } ->
   type then == "function"
 
 let runPoint p -> p()
 
 let runMonad { value, next } -> case
-  when isError v -> v
   when isPromise v -> .then v runNext
   else runNext v
 end where
@@ -86,9 +83,6 @@ let run m -> case
   when isMonad m -> runMonad m
   else runPoint m
 end
-
-let print msg ->
-  .log console msg
 
 export {
   type,
@@ -126,5 +120,6 @@ export {
   ImList,
   ImMap,
   get,
-  getIn
+  getIn,
+  run
 }

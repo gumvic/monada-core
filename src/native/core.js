@@ -28,6 +28,7 @@ function dontPanic(f, handler) {
 }
 
 function panic(e) {
+  // TODO wrap into an Error if not an Error?
   throw e;
 }
 
@@ -144,6 +145,10 @@ class Done {
   }
 }
 
+function done(value) {
+  return new Done(value);
+}
+
 function isDone(x) {
   return x instanceof Done;
 }
@@ -245,7 +250,7 @@ module.exports = {
   $dash,
   $star,
   $slash,
-  $percent
+  $percent,
   $right,
   $left,
   $right$equals,
@@ -269,7 +274,7 @@ module.exports = {
   toJS,
   fromJS,
   ImList,
-  ImMap
+  ImMap,
   get,
   getIn
 };
