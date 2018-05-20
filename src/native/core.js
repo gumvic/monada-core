@@ -139,18 +139,17 @@ function $and$and(x, y) {
   return x && y;
 }
 
-class Done {
-	constructor(value) {
-  	this.value = value;
-  }
-}
+const $done = Symbol("done");
 
 function done(value) {
-  return new Done(value);
+  return {
+    [$done]: true,
+    value: value
+  };
 }
 
 function isDone(x) {
-  return x instanceof Done;
+  return x && x[$done];
 }
 
 function into(result, item) {
@@ -193,20 +192,19 @@ function $for(coll) {
   return r(res);
 }
 
-class Monad {
-  constructor(value, next) {
-    this.value = value;
-    this.next = next;
-  }
-}
+const $monad = Symbol("monad");
 
 function monad(value, next) {
   // TODO check that next is a function
-  return new Monad(value, next);
+  return {
+    [$monad]: true,
+    value: value,
+    next: next
+  };
 }
 
 function isMonad(x) {
-  return x instanceof Monad;
+  return x && x[$monad];
 }
 
 function size(x) {
