@@ -5,6 +5,7 @@ import core.native {
   isa,
   dontPanic,
   panic,
+  ==,
   +,
   -,
   ~,
@@ -38,11 +39,63 @@ import core.native {
   getIn
 }
 
+let f ~> g -> \x -> g(f x)
+
+let f <~ g -> \x -> f(g x)
+
+let map f ->
+  \r -> r_ where
+    let r_ -> r()
+    let r_ res -> r res
+    let r_ res x -> r res (f x)
+  end
+
+let map f coll ->
+  for coll (map f)
+
+let filter f ->
+  \r -> r_ where
+    let r_ -> r()
+    let r_ res -> r res
+    let r_ res x -> case
+      when f x -> r res x
+      else res
+    end
+  end
+
+let filter f coll ->
+  for coll (filter f)
+
+let isError x -> false
+
+let isPromise { then } ->
+  type then == "function"
+
+let runPoint p -> p()
+
+let runMonad { value, next } -> case
+  when isError v -> v
+  when isPromise v -> .then v runNext
+  else runNext v
+end where
+  let v = run value
+  let runNext v -> run (next v)
+end
+
+let run m -> case
+  when isMonad m -> runMonad m
+  else runPoint m
+end
+
+let print msg ->
+  .log console msg
+
 export {
   type,
   isa,
   dontPanic,
   panic,
+  ==,
   +,
   -,
   ~,

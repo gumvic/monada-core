@@ -31,7 +31,7 @@ function panic(e) {
   throw e;
 }
 
-const _equals_equals_ = Immutable.is;
+const $equals$equals = Immutable.is;
 
 // +
 function $plus(x, y) {
@@ -240,6 +240,7 @@ module.exports = {
   isa,
   dontPanic,
   panic,
+  $equals$equals,
   $plus,
   $dash,
   $star,
