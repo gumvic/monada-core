@@ -164,23 +164,19 @@ function into(result, item) {
   }
 }
 
-function $for(coll, xf) {
-  if (typeof xf !== "function") {
-  	throw new TypeError(`${xf} is not a transducer.`);
-  }
+function $for(coll) {
   if (!coll ||
   		typeof coll[Symbol.iterator] !== "function") {
     throw new TypeError(`${coll} is not a transducable.`);
   }
-  xf = Array.prototype
-    .slice.call(arguments, 2)
-    .reduce((xf, f) => {
-      if (typeof f !== "function") {
-      	throw new TypeError(`${f} is not a function.`);
-      }
-      return x => xf(f(x));
-    }, xf);
-  const r = xf(into);
+  let r = into;
+  for(let i = arguments.length - 1; i > 0; i--) {
+    const xf = arguments[i];
+    if (typeof xf !== "function") {
+    	throw new TypeError(`${xf} is not a transducer.`);
+    }
+    r = xf(r);
+  }
   let res = f();
   for(let x of coll) {
   	res = r(res, x);
