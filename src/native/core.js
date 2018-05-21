@@ -32,6 +32,14 @@ function panic(e) {
   throw e;
 }
 
+const $undefined = undefined;
+
+const $null = null;
+
+const $false = false;
+
+const $true = true;
+
 const $equals$equals = Immutable.is;
 
 // +
@@ -243,6 +251,10 @@ module.exports = {
   isa,
   dontPanic,
   panic,
+  $undefined,
+  $null,
+  $false,
+  $true,
   $equals$equals,
   $plus,
   $dash,
