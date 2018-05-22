@@ -29,11 +29,14 @@ import ./native/core {
   >>>,
   ||,
   &&,
-  for,
+
   done,
   isDone,
+  reduce,
+
   monad,
   isMonad,
+
   size,
   toJS,
   fromJS,
@@ -44,24 +47,42 @@ import ./native/core {
 }
 
 let f ~> g -> \x -> g(f x)
-
 let f <~ g -> \x -> f(g x)
 
+let reduceImList -> .asMutable (ImList ())
+let reduceImList coll -> .asImmutable coll
+let reduceImList coll x -> .push coll x
+
+let reduceImMap -> .asMutable (ImMap ())
+let reduceImMap coll -> .asImmutable coll
+let reduceImMap coll [k, v] -> .set coll k v
+
+let reducerFor coll -> case
+  when isa coll ImList -> reduceImList
+  when isa coll ImMap -> reduceImMap
+  else reduceImList
+end
+
+let iterate coll xf ->
+  reduce coll r where
+    let r = xf (reducerFor coll)
+  end
+
 let map f ->
-  \r -> r_ where
-    let r_ -> r()
-    let r_ res -> r res
-    let r_ res x -> r res (f x)
+  \r -> r' where
+    let r' -> r()
+    let r' res -> r res
+    let r' res x -> r res (f x)
   end
 
 let map f coll ->
   for coll (map f)
 
 let filter f ->
-  \r -> r_ where
-    let r_ -> r()
-    let r_ res -> r res
-    let r_ res x -> case
+  \r -> r' where
+    let r' -> r()
+    let r' res -> r res
+    let r' res x -> case
       when f x -> r res x
       else res
     end
@@ -117,11 +138,14 @@ export {
   >>>,
   ||,
   &&,
-  for,
+
   done,
   isDone,
+  iterate,
+
   monad,
   isMonad,
+
   size,
   toJS,
   fromJS,
@@ -129,5 +153,9 @@ export {
   ImMap,
   get,
   getIn,
+
+  ~>,
+  <~,
+
   run
 }

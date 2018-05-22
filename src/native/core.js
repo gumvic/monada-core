@@ -160,7 +160,7 @@ function isDone(x) {
   return x && x[$done];
 }
 
-function reducerForImList(result, item) {
+/*function reducerForImList(result, item) {
   if (arguments.length === 0) {
     return ImList().asImmutable();
   }
@@ -226,6 +226,18 @@ function $for(coll) {
     }
   }
   return r(res);
+}*/
+
+function reduce(coll, r) {
+  let res = r();
+  for(let x of coll) {
+  	res = r(res, x);
+    if (isDone(res)) {
+      res = res.value;
+      break;
+    }
+  }
+  return r(res);
 }
 
 const $monad = Symbol("monad");
@@ -265,13 +277,9 @@ function toJS(x) {
 }
 
 const fromJS = Immutable.fromJS;
-
 const ImList = Immutable.List;
-
 const ImMap = Immutable.Map;
-
 const get = Immutable.get;
-
 const getIn = Immutable.getIn;
 
 module.exports = {
@@ -303,11 +311,14 @@ module.exports = {
   $bang,
   $pipe$pipe,
   $and$and,
-  $for,
+
   done,
   isDone,
+  reduce,
+
   monad,
   isMonad,
+
   size,
   toJS,
   fromJS,
