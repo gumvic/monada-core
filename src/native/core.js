@@ -160,19 +160,47 @@ function isDone(x) {
   return x && x[$done];
 }
 
-function into(result, item) {
+function reducerForImList(result, item) {
   if (arguments.length === 0) {
-    return [];
+    return ImList().asImmutable();
   }
   else if (arguments.length === 1) {
-    return result;
+    return result.asImmutable();
   }
   else if (arguments.length === 2) {
-    result.push(item);
-    return result;
+    return result.push(item);
   }
   else {
     throw new TypeError("Arity not supported: " + arguments.length.toString());
+  }
+}
+
+function reducerForImMap(result, item) {
+  if (arguments.length === 0) {
+    return ImMap().asImmutable();
+  }
+  else if (arguments.length === 1) {
+    return result.asImmutable();
+  }
+  else if (arguments.length === 2) {
+    return result.push(get(item, 0), get(item, 1));
+  }
+  else {
+    throw new TypeError("Arity not supported: " + arguments.length.toString());
+  }
+}
+
+// TODO -- ES Map, Set; also the rest of the Immutable collections
+
+function reducerFor(coll) {
+  if (coll instanceof ImList) {
+    return reducerForImList;
+  }
+  else if (coll instanceof ImMap) {
+    return reducerForImMap;
+  }
+  else {
+    return reducerForImList;
   }
 }
 
@@ -181,7 +209,7 @@ function $for(coll) {
   		typeof coll[Symbol.iterator] !== "function") {
     throw new TypeError(`${coll} is not a transducable.`);
   }
-  let r = into;
+  let r = reducerFor(coll);
   for(let i = arguments.length - 1; i > 0; i--) {
     const xf = arguments[i];
     if (typeof xf !== "function") {
