@@ -1,5 +1,13 @@
 module core
 
+import Immutable {
+  fromJS,
+  List -> ImList,
+  Map -> ImMap,
+  get,
+  getIn
+}
+
 import ./native {
   type,
   isa,
@@ -29,9 +37,7 @@ import ./native {
   >>>,
   ||,
   &&,
-
-  monad,
-  isMonad
+  iterate -> iterate'
 }
 
 import coll {
@@ -42,13 +48,46 @@ import coll {
   ImMap,
   get,
   getIn,
-  done,
-  isDone,
   iterate
 }
 
 let f ~> g -> \x -> g(f x)
 let f <~ g -> \x -> f(g x)
+
+let size x -> case
+  when !x -> 0
+  when type (.size x) == "number" -> .size x
+  when type (.length x) == "number" -> .length x
+  else 0
+end
+
+let toJS x -> case
+  when !x -> x
+  when type (.toJS x) == "function" -> .toJS x ()
+  else x
+end
+
+# TODO -- reduceFor ES Map, Set; also the rest of the Immutable collections
+
+let reduceImList -> .asMutable (ImList()) ()
+let reduceImList coll -> .asImmutable coll()
+let reduceImList coll x -> .push coll x
+
+let reduceImMap -> .asMutable (ImMap()) ()
+let reduceImMap coll -> .asImmutable coll()
+let reduceImMap coll [k, v] -> .set coll k v
+
+let reducerFor coll -> case
+  when isa coll ImList -> reduceImList
+  when isa coll ImMap -> reduceImMap
+  else reduceImList
+end
+
+let iterate coll xf ->
+  iterate' coll r where
+    let r = xf (reducerFor coll)
+  end
+
 
 let map f ->
   \r -> r' where
@@ -72,6 +111,8 @@ let filter f ->
 
 let filter f coll ->
   iterate coll (filter f)
+
+let Monad value next
 
 let isPromise x ->
   x && (type (.then x) == "function")
@@ -121,13 +162,10 @@ export {
   >>>,
   ||,
   &&,
-
-  done,
-  isDone,
   iterate,
 
-  monad,
-  isMonad,
+  Done,
+  Monad,
 
   size,
   toJS,

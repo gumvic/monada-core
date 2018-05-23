@@ -1,5 +1,7 @@
 const Immutable = require("Immutable");
 
+const Done = require("./Done");
+
 function type(x) {
   return typeof x;
 }
@@ -148,25 +150,12 @@ function $and$and(x, y) {
   return x && y;
 }
 
-const $done = Symbol("done");
-
-function done(value) {
-  return {
-    [$done]: true,
-    value: value
-  };
-}
-
-function isDone(x) {
-  return x && x[$done];
-}
-
 function iterate(coll, r) {
   let res = r();
   for(let x of coll) {
   	res = r(res, x);
-    if (isDone(res)) {
-      res = res.value;
+    if (res instanceof Done) {
+      res = res.get("value");
       break;
     }
   }
@@ -174,19 +163,6 @@ function iterate(coll, r) {
 }
 
 const $monad = Symbol("monad");
-
-function monad(value, next) {
-  // TODO check that next is a function
-  return {
-    [$monad]: true,
-    value: value,
-    next: next
-  };
-}
-
-function isMonad(x) {
-  return x && x[$monad];
-}
 
 module.exports = {
   type,
@@ -217,11 +193,5 @@ module.exports = {
   $bang,
   $pipe$pipe,
   $and$and,
-
-  done,
-  isDone,
-  iterate,
-
-  isMonad,
-  monad
+  iterate
 };
