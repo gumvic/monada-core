@@ -1,6 +1,20 @@
 const Immutable = require("Immutable");
 
-const Done = require("./Done");
+const ImList = Immutable.List;
+const ImMap = Immutable.Map;
+const get = Immutable.get;
+const Record = Immutable.Record;
+
+const MonadFactory = Record({
+  value: undefined,
+  next: undefined
+});
+function Monad(value, next) {
+	const monad = Object.create(Monad.prototype);
+  MonadFactory.call(monad, { value, next });
+	return monad;
+}
+Monad.prototype = Object.create(MonadFactory.prototype);
 
 function type(x) {
   return typeof x;
@@ -150,6 +164,16 @@ function $and$and(x, y) {
   return x && y;
 }
 
+const DoneFactory = Record({
+  value: undefined
+});
+function Done(value) {
+	const done = Object.create(Done.prototype);
+  DoneFactory.call(done, { value });
+	return done;
+}
+Done.prototype = Object.create(DoneFactory.prototype);
+
 function iterate(coll, r) {
   let res = r();
   for(let x of coll) {
@@ -162,9 +186,13 @@ function iterate(coll, r) {
   return r(res);
 }
 
-const $monad = Symbol("monad");
-
 module.exports = {
+  ImList,
+  ImMap,
+  get,
+  Record,
+  Monad,
+
   type,
   isa,
   dontPanic,
@@ -193,5 +221,7 @@ module.exports = {
   $bang,
   $pipe$pipe,
   $and$and,
-  iterate
+
+  iterate,
+  Done
 };

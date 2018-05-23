@@ -2,53 +2,7 @@ module core
 
 import Immutable {
   fromJS,
-  List -> ImList,
-  Map -> ImMap,
-  get,
   getIn
-}
-
-import ./native {
-  type,
-  isa,
-  dontPanic,
-  panic,
-  undefined,
-  null,
-  false,
-  true,
-  ==,
-  +,
-  -,
-  ~,
-  !,
-  *,
-  /,
-  %,
-  >,
-  <,
-  >=,
-  <=,
-  |,
-  &,
-  ^,
-  >>,
-  <<,
-  >>>,
-  ||,
-  &&,
-  iterate -> iterate'
-}
-
-import coll {
-  size,
-  toJS,
-  fromJS,
-  ImList,
-  ImMap,
-  get,
-  getIn,
-  iterate
 }
 
 let f ~> g -> \x -> g(f x)
@@ -87,7 +41,6 @@ let iterate coll xf ->
   iterate' coll r where
     let r = xf (reducerFor coll)
   end
-
 
 let map f ->
   \r -> r' where
@@ -128,11 +81,17 @@ end where
 end
 
 let run m -> case
-  when isMonad m -> runMonad m
+  when isa m Monad -> runMonad m
   else runPoint m
 end
 
 export {
+  ImList,
+  ImMap,
+  get,
+  Record,
+  Monad,
+
   type,
   isa,
   dontPanic,
@@ -162,17 +121,15 @@ export {
   >>>,
   ||,
   &&,
+
   iterate,
+  Done,
 
   Done,
-  Monad,
 
   size,
   toJS,
   fromJS,
-  ImList,
-  ImMap,
-  get,
   getIn,
 
   map,
