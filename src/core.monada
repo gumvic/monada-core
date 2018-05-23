@@ -49,12 +49,12 @@ import ./native/core {
 let f ~> g -> \x -> g(f x)
 let f <~ g -> \x -> f(g x)
 
-let reduceImList -> .asMutable (ImList ())
-let reduceImList coll -> .asImmutable coll
+let reduceImList -> .asMutable (ImList()) ()
+let reduceImList coll -> .asImmutable coll()
 let reduceImList coll x -> .push coll x
 
-let reduceImMap -> .asMutable (ImMap ())
-let reduceImMap coll -> .asImmutable coll
+let reduceImMap -> .asMutable (ImMap()) ()
+let reduceImMap coll -> .asImmutable coll()
 let reduceImMap coll [k, v] -> .set coll k v
 
 let reducerFor coll -> case
@@ -76,7 +76,7 @@ let map f ->
   end
 
 let map f coll ->
-  for coll (map f)
+  iterate coll (map f)
 
 let filter f ->
   \r -> r' where
@@ -89,7 +89,7 @@ let filter f ->
   end
 
 let filter f coll ->
-  for coll (filter f)
+  iterate coll (filter f)
 
 let isPromise { then } ->
   type then == "function"
@@ -118,6 +118,7 @@ export {
   null,
   false,
   true,
+
   ==,
   +,
   -,
@@ -153,6 +154,9 @@ export {
   ImMap,
   get,
   getIn,
+
+  map,
+  filter,
 
   ~>,
   <~,
