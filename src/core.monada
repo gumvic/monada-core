@@ -1,6 +1,6 @@
 module core
 
-import ./native/core {
+import ./native {
   type,
   isa,
   dontPanic,
@@ -30,43 +30,25 @@ import ./native/core {
   ||,
   &&,
 
-  done,
-  isDone,
-  reduce,
-
   monad,
-  isMonad,
+  isMonad
+}
 
+import coll {
   size,
   toJS,
   fromJS,
   ImList,
   ImMap,
   get,
-  getIn
+  getIn,
+  done,
+  isDone,
+  iterate
 }
 
 let f ~> g -> \x -> g(f x)
 let f <~ g -> \x -> f(g x)
-
-let reduceImList -> .asMutable (ImList()) ()
-let reduceImList coll -> .asImmutable coll()
-let reduceImList coll x -> .push coll x
-
-let reduceImMap -> .asMutable (ImMap()) ()
-let reduceImMap coll -> .asImmutable coll()
-let reduceImMap coll [k, v] -> .set coll k v
-
-let reducerFor coll -> case
-  when isa coll ImList -> reduceImList
-  when isa coll ImMap -> reduceImMap
-  else reduceImList
-end
-
-let iterate coll xf ->
-  reduce coll r where
-    let r = xf (reducerFor coll)
-  end
 
 let map f ->
   \r -> r' where
@@ -91,8 +73,8 @@ let filter f ->
 let filter f coll ->
   iterate coll (filter f)
 
-let isPromise { then } ->
-  type then == "function"
+let isPromise x ->
+  x && (type (.then x) == "function")
 
 let runPoint p -> p()
 

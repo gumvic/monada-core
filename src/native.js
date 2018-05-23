@@ -40,6 +40,7 @@ const $false = false;
 
 const $true = true;
 
+// ==
 const $equals$equals = Immutable.is;
 
 // +
@@ -160,75 +161,7 @@ function isDone(x) {
   return x && x[$done];
 }
 
-/*function reducerForImList(result, item) {
-  if (arguments.length === 0) {
-    return ImList().asImmutable();
-  }
-  else if (arguments.length === 1) {
-    return result.asImmutable();
-  }
-  else if (arguments.length === 2) {
-    return result.push(item);
-  }
-  else {
-    throw new TypeError("Arity not supported: " + arguments.length.toString());
-  }
-}
-
-function reducerForImMap(result, item) {
-  if (arguments.length === 0) {
-    return ImMap().asImmutable();
-  }
-  else if (arguments.length === 1) {
-    return result.asImmutable();
-  }
-  else if (arguments.length === 2) {
-    return result.push(get(item, 0), get(item, 1));
-  }
-  else {
-    throw new TypeError("Arity not supported: " + arguments.length.toString());
-  }
-}
-
-// TODO -- ES Map, Set; also the rest of the Immutable collections
-
-function reducerFor(coll) {
-  if (coll instanceof ImList) {
-    return reducerForImList;
-  }
-  else if (coll instanceof ImMap) {
-    return reducerForImMap;
-  }
-  else {
-    return reducerForImList;
-  }
-}
-
-function $for(coll) {
-  if (!coll ||
-  		typeof coll[Symbol.iterator] !== "function") {
-    throw new TypeError(`${coll} is not a transducable.`);
-  }
-  let r = reducerFor(coll);
-  for(let i = arguments.length - 1; i > 0; i--) {
-    const xf = arguments[i];
-    if (typeof xf !== "function") {
-    	throw new TypeError(`${xf} is not a transducer.`);
-    }
-    r = xf(r);
-  }
-  let res = r();
-  for(let x of coll) {
-  	res = r(res, x);
-    if (isDone(res)) {
-      res = res.value;
-      break;
-    }
-  }
-  return r(res);
-}*/
-
-function reduce(coll, r) {
+function iterate(coll, r) {
   let res = r();
   for(let x of coll) {
   	res = r(res, x);
@@ -254,33 +187,6 @@ function monad(value, next) {
 function isMonad(x) {
   return x && x[$monad];
 }
-
-function size(x) {
-  if (x && x.size && typeof x.size === "number") {
-    return x.size;
-  }
-  else if (x && x.length && typeof x.length === "number") {
-    return x.size;
-  }
-  else {
-    return 0;
-  }
-}
-
-function toJS(x) {
-	if (x && typeof x.toJS === "function") {
-  	return x.toJS();
-  }
-  else {
-  	return x;
-  }
-}
-
-const fromJS = Immutable.fromJS;
-const ImList = Immutable.List;
-const ImMap = Immutable.Map;
-const get = Immutable.get;
-const getIn = Immutable.getIn;
 
 module.exports = {
   type,
@@ -314,16 +220,8 @@ module.exports = {
 
   done,
   isDone,
-  reduce,
+  iterate,
 
-  monad,
   isMonad,
-
-  size,
-  toJS,
-  fromJS,
-  ImList,
-  ImMap,
-  get,
-  getIn
+  monad
 };
