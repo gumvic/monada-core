@@ -11,8 +11,9 @@ const MonadFactory = Record({
 });
 function Monad(value, next) {
 	const monad = Object.create(Monad.prototype);
-  MonadFactory.call(monad, { value, next });
-	return monad;
+  MonadFactory.call(monad);
+	return monad.withMutations(monad =>
+    monad.set("value", value).set("next", next));
 }
 Monad.prototype = Object.create(MonadFactory.prototype);
 
@@ -169,8 +170,9 @@ const DoneFactory = Record({
 });
 function Done(value) {
 	const done = Object.create(Done.prototype);
-  DoneFactory.call(done, { value });
-	return done;
+  DoneFactory.call(done);
+	return done.withMutations(done =>
+    done.set("value", value));
 }
 Done.prototype = Object.create(DoneFactory.prototype);
 

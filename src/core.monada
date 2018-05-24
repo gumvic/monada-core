@@ -65,8 +65,6 @@ let filter f ->
 let filter f coll ->
   iterate coll (filter f)
 
-let Monad value next
-
 let isPromise x ->
   x && (type (.then x) == "function")
 
@@ -123,8 +121,6 @@ export {
   &&,
 
   iterate,
-  Done,
-
   Done,
 
   size,

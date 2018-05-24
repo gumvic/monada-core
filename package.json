@@ -5,7 +5,7 @@
   "main": "dist/core.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "monada src dist -o '{\"essentials\":{\"list\":\"ImList\",\"map\":\"ImMap\",\"get\":\"get\",\"record\":\"Record\",\"monad\":\"Monad\"},\"app\":{\"main\":\"main\",\"run\":\"run\"},\"autoImports\":[{\"module\":\"./native.js\",\"value\":{\"ImMap\":\"ImMap\",\"ImList\":\"ImList\",\"get\":\"get\",\"Record\":\"Record\",\"Monad\":\"Monad\",\"type\":\"type\",\"isa\":\"isa\",\"panic\":\"panic\",\"dontPanic\":\"dontPanic\",\"undefined\":\"undefined\",\"null\":\"null\",\"true\":\"true\",\"false\":\"false\",\"==\":\"==\",\"+\":\"+\",\"-\":\"-\",\"*\":\"*\",\"/\":\"/\",\"%\":\"%\",\">\":\">\",\"<\":\"<\",\">=\":\">=\",\"<=\":\"<=\",\"~\":\"~\",\"|\":\"|\",\"&\":\"&\",\"^\":\"^\",\">>\":\">>\",\"<<\":\"<<\",\">>>\":\">>>\",\"!\":\"!\",\"||\":\"||\",\"&&\":\"&&\",\"Done\":\"Done\",\"iterate\":\"iterate'\"}}]}'"
+    "postinstall": "monada src dist -o options.json"
   },
   "repository": {
     "type": "git",
