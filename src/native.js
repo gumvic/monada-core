@@ -187,6 +187,11 @@ function $and$and(x, y) {
   return x && y;
 }
 
+const $undefined = undefined;
+const $null = null;
+const $false = false;
+const $true = true;
+
 const Done = ImRecord("value");
 
 function iterate(coll, r) {
@@ -224,6 +229,10 @@ module.exports = {
   $bang,
   $pipe$pipe,
   $and$and,
+  $undefined,
+  $null,
+  $false,
+  $true,
   $try,
   $throw,
   ImList,
