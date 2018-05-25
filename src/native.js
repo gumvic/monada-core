@@ -5,8 +5,9 @@ const ImMap = Immutable.Map;
 const RecordFactory = Immutable.Record;
 const get = Immutable.get;
 
+// TODO arguments asserts
+
 function ImRecord() {
-  // This way is't supposed to be the fastest
   let names = [];
   let namesForFactory = {};
   for(let i = 0; i < arguments.length; i++) {
@@ -40,16 +41,16 @@ function ImRecord() {
 
 const Monad = ImRecord("value", "next");
 
-function type(x) {
+function $typeof(x) {
   return typeof x;
 }
 
-function isa(x, constructor) {
+// ?
+function $question(x, constructor) {
   return x instanceof constructor;
 }
 
-// TODO make it accept a monad somehow?
-function dontPanic(f, handler) {
+function $try(f, handler) {
   if (handler === undefined) {
     handler = x => x;
   }
@@ -67,39 +68,37 @@ function dontPanic(f, handler) {
   }
 }
 
-function panic(e) {
+function $throw(e) {
   // TODO wrap into an Error if not an Error?
   throw e;
 }
-
-const $undefined = undefined;
-
-const $null = null;
-
-const $false = false;
-
-const $true = true;
 
 // ==
 const $equals$equals = Immutable.is;
 
 // +
 function $plus(x, y) {
-  if (typeof y === undefined) {
+  if (arguments.length === 1) {
     return +x;
   }
-  else {
+  else if (arguments.length === 2) {
     return x + y;
+  }
+  else {
+    throw new TypeError(`Bad arity: ${arguments.length}`);
   }
 }
 
 // -
 function $dash(x, y) {
-  if (typeof y === undefined) {
+  if (arguments.length === 1) {
     return -x;
   }
-  else {
+  else if (arguments.length === 2) {
     return x - y;
+  }
+  else {
+    throw new TypeError(`Bad arity: ${arguments.length}`);
   }
 }
 
@@ -203,14 +202,8 @@ function iterate(coll, r) {
 }
 
 module.exports = {
-  type,
-  isa,
-  dontPanic,
-  panic,
-  $undefined,
-  $null,
-  $false,
-  $true,
+  $typeof,
+  $question,
   $equals$equals,
   $plus,
   $dash,
@@ -231,6 +224,8 @@ module.exports = {
   $bang,
   $pipe$pipe,
   $and$and,
+  $try,
+  $throw,
   ImList,
   ImMap,
   get,

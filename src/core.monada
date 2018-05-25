@@ -10,14 +10,14 @@ let f <~ g -> \x -> f(g x)
 
 let size x -> case
   when !x -> 0
-  when type (.size x) == "number" -> .size x
-  when type (.length x) == "number" -> .length x
+  when typeof (.size x) == "number" -> .size x
+  when typeof (.length x) == "number" -> .length x
   else 0
 end
 
 let toJS x -> case
   when !x -> x
-  when type (.toJS x) == "function" -> .toJS x ()
+  when typeof (.toJS x) == "function" -> .toJS x ()
   else x
 end
 
@@ -32,8 +32,8 @@ let reduceImMap coll -> .asImmutable coll()
 let reduceImMap coll [k, v] -> .set coll k v
 
 let reducerFor coll -> case
-  when isa coll ImList -> reduceImList
-  when isa coll ImMap -> reduceImMap
+  when coll ? ImList -> reduceImList
+  when coll ? ImMap -> reduceImMap
   else reduceImList
 end
 
@@ -66,7 +66,7 @@ let filter f coll ->
   iterate coll (filter f)
 
 let isPromise x ->
-  x && (type (.then x) == "function")
+  x && (typeof (.then x) == "function")
 
 let runPoint p -> p()
 
@@ -79,19 +79,13 @@ end where
 end
 
 let run m -> case
-  when isa m Monad -> runMonad m
+  when m ? Monad -> runMonad m
   else runPoint m
 end
 
 export {
-  type,
-  isa,
-  dontPanic,
-  panic,
-  undefined,
-  null,
-  false,
-  true,
+  typeof,
+  ?,
   ==,
   +,
   -,
@@ -112,6 +106,8 @@ export {
   >>>,
   ||,
   &&,
+  try,
+  throw,
   ImList,
   ImMap,
   ImRecord,
