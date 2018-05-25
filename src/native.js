@@ -1,9 +1,16 @@
 const Immutable = require("Immutable");
 
 const ImList = Immutable.List;
+
 const ImMap = Immutable.Map;
+
 const RecordFactory = Immutable.Record;
+
 const get = Immutable.get;
+
+function getp(object, property) {
+  return object ? object[property] : undefined;
+}
 
 // TODO arguments asserts
 
@@ -199,7 +206,7 @@ function iterate(coll, r) {
   for(let x of coll) {
   	res = r(res, x);
     if (res instanceof Done) {
-      res = res.get("value");
+      res = get(res, "value");
       break;
     }
   }
@@ -238,6 +245,7 @@ module.exports = {
   ImList,
   ImMap,
   get,
+  getp,
   ImRecord,
   Monad,
   iterate,

@@ -8,16 +8,14 @@ import Immutable {
 let f ~> g -> \x -> g(f x)
 let f <~ g -> \x -> f(g x)
 
-let size x -> case
-  when !x -> 0
-  when typeof (.size x) == "number" -> .size x
-  when typeof (.length x) == "number" -> .length x
+let size { .size, .length } -> case
+  when typeof size == "number" -> size
+  when typeof length == "number" -> length
   else 0
 end
 
-let toJS x -> case
-  when !x -> x
-  when typeof (.toJS x) == "function" -> .toJS x ()
+let toJS x@{ .toJS } -> case
+  when typeof toJS == "function" -> .toJS x ()
   else x
 end
 
@@ -65,8 +63,8 @@ let filter f ->
 let filter f coll ->
   iterate coll (filter f)
 
-let isPromise x ->
-  x && (typeof (.then x) == "function")
+let isPromise { .then } ->
+  typeof then == "function"
 
 let runPoint p -> p()
 
@@ -117,6 +115,7 @@ export {
   ImRecord,
   Monad,
   get,
+  getp,
   getIn,
   size,
   toJS,
