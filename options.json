@@ -37,7 +37,7 @@
         "get",
         "getp",
         "Monad",
-        "iterate",
+        "iterate'",
         "Done"
       ]
     }

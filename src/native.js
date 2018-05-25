@@ -201,7 +201,8 @@ const $true = true;
 
 const Done = ImRecord("value");
 
-function iterate(coll, r) {
+// iterate'
+function iterate$quote(coll, r) {
   let res = r();
   for(let x of coll) {
   	res = r(res, x);
@@ -248,6 +249,6 @@ module.exports = {
   getp,
   ImRecord,
   Monad,
-  iterate,
+  iterate$quote,
   Done
 };
