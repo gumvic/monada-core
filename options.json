@@ -1,58 +1,44 @@
 {
-  "essentials": {
-    "list": "ImList",
-    "map": "ImMap",
-    "get": "get",
-    "record": "Record",
-    "monad": "Monad"
-  },
-  "app": {
-    "main": "main",
-    "run": "run"
-  },
   "autoImports": [
     {
       "module": "./native.js",
-      "value": {
-        "ImMap": "ImMap",
-        "ImList": "ImList",
-        "get": "get",
-        "Record": "Record",
-        "Monad": "Monad",
-
-        "type": "type",
-        "isa": "isa",
-        "panic": "panic",
-        "dontPanic": "dontPanic",
-        "undefined": "undefined",
-        "null": "null",
-        "true": "true",
-        "false": "false",
-
-        "==": "==",
-        "+": "+",
-        "-": "-",
-        "*": "*",
-        "/": "/",
-        "%": "%",
-        ">": ">",
-        "<": "<",
-        ">=": ">=",
-        "<=": "<=",
-        "~": "~",
-        "|": "|",
-        "&": "&",
-        "^": "^",
-        ">>": ">>",
-        "<<": "<<",
-        ">>>": ">>>",
-        "!": "!",
-        "||": "||",
-        "&&": "&&",
-
-        "iterate": "iterate'",
-        "Done": "Done"
-      }
+      "value": [
+        "type",
+        "isa",
+        "panic",
+        "dontPanic",
+        "undefined",
+        "null",
+        "true",
+        "false",
+        "==",
+        "+",
+        "-",
+        "*",
+        "/",
+        "%",
+        ">",
+        "<",
+        ">=",
+        "<=",
+        "~",
+        "|",
+        "&",
+        "^",
+        ">>",
+        "<<",
+        ">>>",
+        "!",
+        "||",
+        "&&",
+        "ImMap",
+        "ImList",
+        "ImRecord",
+        "get",
+        "Monad",
+        "iterate",
+        "Done"
+      ]
     }
   ]
 }

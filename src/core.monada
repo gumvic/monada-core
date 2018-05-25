@@ -37,8 +37,8 @@ let reducerFor coll -> case
   else reduceImList
 end
 
-let iterate coll xf ->
-  iterate' coll r where
+let iterate' coll xf ->
+  iterate coll r where
     let r = xf (reducerFor coll)
   end
 
@@ -84,12 +84,6 @@ let run m -> case
 end
 
 export {
-  ImList,
-  ImMap,
-  get,
-  Record,
-  Monad,
-
   type,
   isa,
   dontPanic,
@@ -98,7 +92,6 @@ export {
   null,
   false,
   true,
-
   ==,
   +,
   -,
@@ -119,20 +112,21 @@ export {
   >>>,
   ||,
   &&,
-
-  iterate,
-  Done,
-
+  ImList,
+  ImMap,
+  ImRecord,
+  Monad,
+  get,
+  getIn,
   size,
   toJS,
   fromJS,
-  getIn,
 
+  iterate' -> iterate,
+  Done,
   map,
   filter,
-
   ~>,
   <~,
-
   run
 }

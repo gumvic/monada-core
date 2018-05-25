@@ -2,10 +2,10 @@ const Immutable = require("Immutable");
 
 const ImList = Immutable.List;
 const ImMap = Immutable.Map;
+const ImRecord = Immutable.Record;
 const get = Immutable.get;
-const Record = Immutable.Record;
 
-const MonadFactory = Record({
+const MonadFactory = ImRecord({
   value: undefined,
   next: undefined
 });
@@ -165,7 +165,7 @@ function $and$and(x, y) {
   return x && y;
 }
 
-const DoneFactory = Record({
+const DoneFactory = ImRecord({
   value: undefined
 });
 function Done(value) {
@@ -189,12 +189,6 @@ function iterate(coll, r) {
 }
 
 module.exports = {
-  ImList,
-  ImMap,
-  get,
-  Record,
-  Monad,
-
   type,
   isa,
   dontPanic,
@@ -223,7 +217,11 @@ module.exports = {
   $bang,
   $pipe$pipe,
   $and$and,
-
+  ImList,
+  ImMap,
+  get,
+  ImRecord,
+  Monad,
   iterate,
   Done
 };
