@@ -2,20 +2,43 @@ const Immutable = require("Immutable");
 
 const ImList = Immutable.List;
 const ImMap = Immutable.Map;
-const ImRecord = Immutable.Record;
+const RecordFactory = Immutable.Record;
 const get = Immutable.get;
 
-const MonadFactory = ImRecord({
-  value: undefined,
-  next: undefined
-});
-function Monad(value, next) {
-	const monad = Object.create(Monad.prototype);
-  MonadFactory.call(monad);
-	return monad.withMutations(monad =>
-    monad.set("value", value).set("next", next));
+function ImRecord() {
+  // This way is't supposed to be the fastest
+  let names = [];
+  let namesForFactory = {};
+  for(let i = 0; i < arguments.length; i++) {
+    const name = arguments[i];
+    if (typeof name !== "string") {
+      throw new TypeError(`A record field ${name} must be a string.`);
+    }
+    names.push(name);
+    namesForFactory[name] = undefined;
+  }
+
+  const Factory = RecordFactory(namesForFactory);
+
+  function Record() {
+    const record = Object.create(Record.prototype);
+    Factory.call(record);
+    return record.withMutations(record => {
+      for(let i = 0; i < names.length; i++) {
+        const name = names[i];
+        const value = arguments[i];
+        record = record.set(name, value);
+      }
+      return record;
+    });
+  }
+
+  Record.prototype = Object.create(Factory.prototype);
+
+  return Record;
 }
-Monad.prototype = Object.create(MonadFactory.prototype);
+
+const Monad = ImRecord("value", "next");
 
 function type(x) {
   return typeof x;
@@ -165,16 +188,7 @@ function $and$and(x, y) {
   return x && y;
 }
 
-const DoneFactory = ImRecord({
-  value: undefined
-});
-function Done(value) {
-	const done = Object.create(Done.prototype);
-  DoneFactory.call(done);
-	return done.withMutations(done =>
-    done.set("value", value));
-}
-Done.prototype = Object.create(DoneFactory.prototype);
+const Done = ImRecord("value");
 
 function iterate(coll, r) {
   let res = r();
