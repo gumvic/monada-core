@@ -66,8 +66,8 @@ let reducerFor coll -> case
   else reduceImList
 end
 
-let iterate coll xf ->
-  iterate' coll r where
+let transduce coll xf ->
+  transduce' coll r where
     let r = xf (reducerFor coll)
   end
 
@@ -79,7 +79,7 @@ let map f ->
   end
 
 let map f coll ->
-  iterate coll (map f)
+  transduce coll (map f)
 
 let filter f ->
   \r -> r' where
@@ -92,9 +92,9 @@ let filter f ->
   end
 
 let filter f coll ->
-  iterate coll (filter f)
+  transduce coll (filter f)
 
-let fold f init ->
+let reduce f init ->
   \_ -> r' where
     let r' -> init
     let r' res -> res
@@ -102,7 +102,7 @@ let fold f init ->
   end
 
 let fold f init coll ->
-  iterate coll (fold f init)
+  transduce coll (fold f init)
 
 let isPromise { .then } ->
   typeof then == "function"
@@ -163,11 +163,11 @@ export {
   size,
   toJS,
   fromJS,
-  iterate,
+  transduce,
   Done,
   map,
   filter,
-  fold,
+  reduce,
   ~>,
   <~,
   run

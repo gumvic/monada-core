@@ -39,7 +39,7 @@
         "ImRecord",
         "get",
         "Monad",
-        "iterate'",
+        "transduce'",
         "Done"
       ]
     }

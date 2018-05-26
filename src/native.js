@@ -213,8 +213,8 @@ const $true = true;
 
 const Done = ImRecord("value");
 
-// iterate'
-function iterate$quote(coll, r) {
+// transduce'
+function transduce$quote(coll, r) {
   let res = r();
   for(let x of coll) {
   	res = r(res, x);
@@ -263,6 +263,6 @@ module.exports = {
   get,
   ImRecord,
   Monad,
-  iterate$quote,
+  transduce$quote,
   Done
 };
