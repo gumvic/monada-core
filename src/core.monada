@@ -5,9 +5,6 @@ import Immutable {
   getIn
 }
 
-let f ~> g -> \x -> g(f x)
-let f <~ g -> \x -> f(g x)
-
 let size { .size, .length } -> case
   when typeof size == "number" -> size
   when typeof length == "number" -> length
@@ -101,8 +98,10 @@ let reduce f init ->
     let r' res x -> f res x
   end
 
-let fold f init coll ->
-  transduce coll (fold f init)
+let reduce f init coll ->
+  transduce coll (reduce f init)
+
+let f $ g -> \x -> f (g x)
 
 let isPromise { .then } ->
   typeof then == "function"
@@ -168,7 +167,6 @@ export {
   map,
   filter,
   reduce,
-  ~>,
-  <~,
+  $,
   run
 }
