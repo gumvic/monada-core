@@ -19,7 +19,38 @@ let toJS x@{ .toJS } -> case
   else x
 end
 
-# TODO -- reduceFor ES Map, Set; also the rest of the Immutable collections
+#{
+# This doesn't work because for one thing Immutable's Map reducer expects [k, v] to be a native array
+let reducerInitProp = "@@transducer/init"
+let reducerStepProp = "@@transducer/step"
+let reducerResultProp = "@@transducer/result"
+
+let hasNativeReducer coll ->
+  hasp coll reducerInitProp &&
+  hasp coll reducerStepProp &&
+  hasp coll reducerResultProp
+
+let nativeReducerFor coll ->
+  r where
+    let init = getp coll reducerInitProp
+    let step = getp coll reducerStepProp
+    let result = getp coll reducerResultProp
+    let r -> .call init coll
+    let r res -> .call result coll res
+    let r res x -> .call step coll res x
+end
+
+let defaultReducer -> .asMutable (ImList()) ()
+let defaultReducer coll -> .asImmutable coll()
+let defaultReducer coll x -> .push coll x
+
+let reducerFor coll -> case
+  when hasNativeReducer coll -> nativeReducerFor coll
+  else defaultReducer
+end
+}
+
+# TODO -- reduceFor ES Map, Set etc
 
 let reduceImList -> .asMutable (ImList()) ()
 let reduceImList coll -> .asImmutable coll()

@@ -8,6 +8,10 @@ const RecordFactory = Immutable.Record;
 
 const get = Immutable.get;
 
+function hasp(object, property) {
+  return object && object[property] !== undefined;
+}
+
 function getp(object, property) {
   return object ? object[property] : undefined;
 }
@@ -243,10 +247,11 @@ module.exports = {
   $true,
   $try,
   $throw,
+  getp,
+  hasp,
   ImList,
   ImMap,
   get,
-  getp,
   ImRecord,
   Monad,
   iterate$quote,

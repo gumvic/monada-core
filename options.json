@@ -31,11 +31,12 @@
         "true",
         "try",
         "throw",
+        "hasp",
+        "getp",
         "ImMap",
         "ImList",
         "ImRecord",
         "get",
-        "getp",
         "Monad",
         "iterate'",
         "Done"
