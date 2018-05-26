@@ -138,7 +138,7 @@ end where
 end
 
 let run m -> case
-  when m ? Monad -> runMonad m
+  when isMonad m -> runMonad m
   else runPoint m
 end
 
@@ -171,11 +171,11 @@ export {
   true,
   try,
   throw,
-  var,
   ImList,
   ImMap,
   ImRecord,
-  Monad,
+  monad,
+  isMonad,
   get,
   hasp,
   getp,
@@ -185,7 +185,8 @@ export {
   toJS,
   fromJS,
   transduce,
-  Done,
+  done,
+  isDone,
   map,
   filter,
   reduce,

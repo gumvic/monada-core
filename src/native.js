@@ -58,8 +58,6 @@ function ImRecord() {
   return Record;
 }
 
-const Monad = ImRecord("value", "next");
-
 function $typeof(x) {
   return typeof x;
 }
@@ -211,7 +209,7 @@ const $null = null;
 const $false = false;
 const $true = true;
 
-function $var(f, value) {
+/*function $var(f, value) {
   return function() {
     if (arguments.length === 0) {
       return value;
@@ -221,17 +219,42 @@ function $var(f, value) {
       return value;
     }
   }
+}*/
+
+const $monad = Symbol("monad");
+
+function monad(value, next) {
+  return {
+    [$monad]: true,
+    value: value,
+    next: next
+  };
 }
 
-const Done = ImRecord("value");
+function isMonad(x) {
+  return x && x[$monad];
+}
+
+const $done = Symbol("done");
+
+function done(value) {
+  return {
+    [$done]: true,
+    value: value
+  };
+}
+
+function isDone(x) {
+  return x && x[$done];
+}
 
 // transduce'
 function transduce$quote(coll, r) {
   let res = r();
   for(let x of coll) {
   	res = r(res, x);
-    if (res instanceof Done) {
-      res = get(res, "value");
+    if (isDone(res)) {
+      res = res.value;
       break;
     }
   }
@@ -267,7 +290,6 @@ module.exports = {
   $true,
   $try,
   $throw,
-  $var,
   getp,
   hasp,
   invoke,
@@ -275,7 +297,9 @@ module.exports = {
   ImMap,
   get,
   ImRecord,
-  Monad,
+  monad,
+  isMonad,
   transduce$quote,
-  Done
+  done,
+  isDone
 };

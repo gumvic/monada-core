@@ -31,7 +31,6 @@
         "true",
         "try",
         "throw",
-        "var",
         "hasp",
         "getp",
         "invoke",
@@ -39,9 +38,11 @@
         "ImList",
         "ImRecord",
         "get",
-        "Monad",
+        "monad",
+        "isMonad",
         "transduce'",
-        "Done"
+        "done",
+        "isDone"
       ]
     }
   ]
