@@ -211,6 +211,18 @@ const $null = null;
 const $false = false;
 const $true = true;
 
+function $var(f, value) {
+  return function() {
+    if (arguments.length === 0) {
+      return value;
+    }
+    else if (arguments.length === 1) {
+      value = f(value, arguments[0]);
+      return value;
+    }
+  }
+}
+
 const Done = ImRecord("value");
 
 // transduce'
@@ -255,6 +267,7 @@ module.exports = {
   $true,
   $try,
   $throw,
+  $var,
   getp,
   hasp,
   invoke,

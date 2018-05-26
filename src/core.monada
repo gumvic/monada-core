@@ -64,9 +64,10 @@ let reducerFor coll -> case
 end
 
 let transduce coll xf ->
-  transduce' coll r where
-    let r = xf (reducerFor coll)
-  end
+  transduce coll xf (reducerFor coll)
+
+let transduce coll xf r ->
+  transduce' coll (xf r)
 
 let map f ->
   \r -> r' where
@@ -100,6 +101,26 @@ let reduce f init ->
 
 let reduce f init coll ->
   transduce coll (reduce f init)
+
+#{
+let take n ->
+  \r -> r' where
+    let r' -> r()
+    let r' res -> r res
+    let r' res x -> case
+      when var() == n -> Done res
+      else
+    end
+    let v = var (+) 0
+
+let indexed ->
+  \r -> r' where
+    let r' -> r()
+    let r' res -> r res
+    let r' res x -> [, x]
+    let v = var (+) 0
+  end
+}
 
 let f $ g -> \x -> f (g x)
 
@@ -150,6 +171,7 @@ export {
   true,
   try,
   throw,
+  var,
   ImList,
   ImMap,
   ImRecord,
