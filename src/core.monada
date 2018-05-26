@@ -16,37 +16,6 @@ let toJS x@{ .toJS } -> case
   else x
 end
 
-#{
-# This doesn't work because for one thing Immutable's Map reducer expects [k, v] to be a native array
-let reducerInitProp = "@@transducer/init"
-let reducerStepProp = "@@transducer/step"
-let reducerResultProp = "@@transducer/result"
-
-let hasNativeReducer coll ->
-  hasp coll reducerInitProp &&
-  hasp coll reducerStepProp &&
-  hasp coll reducerResultProp
-
-let nativeReducerFor coll ->
-  r where
-    let init = getp coll reducerInitProp
-    let step = getp coll reducerStepProp
-    let result = getp coll reducerResultProp
-    let r -> .call init coll
-    let r res -> .call result coll res
-    let r res x -> .call step coll res x
-end
-
-let defaultReducer -> .asMutable (ImList()) ()
-let defaultReducer coll -> .asImmutable coll()
-let defaultReducer coll x -> .push coll x
-
-let reducerFor coll -> case
-  when hasNativeReducer coll -> nativeReducerFor coll
-  else defaultReducer
-end
-}
-
 # TODO -- reduceFor ES Map, Set etc
 
 let reduceImList -> .asMutable (ImList()) ()
@@ -102,43 +71,65 @@ let reduce f init ->
 let reduce f init coll ->
   transduce coll (reduce f init)
 
-#{
 let take n ->
-  \r -> r' where
-    let r' -> r()
-    let r' res -> r res
-    let r' res x -> case
-      when var() == n -> Done res
-      else
+  \r -> statefun r' where
+    let r' _ -> [0, r()]
+    let r' _ res -> [_, r res]
+    let r' n' res x -> case
+      when n' == n -> [n', done res]
+      else [n' + 1, r res x]
     end
-    let v = var (+) 0
+  end
 
-let indexed ->
+let take11 n ->
   \r -> r' where
+    let v = var 0
     let r' -> r()
     let r' res -> r res
-    let r' res x -> [, x]
-    let v = var (+) 0
+    let r' res x -> runSync do
+      n' = getv v;
+      case
+        when n' == n -> done res
+        else do
+          setv v (n' + 1);
+          r res x;
+        end
+      end;
+    end
   end
-}
+
+let take n coll ->
+  transduce coll (take n)
 
 let f $ g -> \x -> f (g x)
 
 let isPromise { .then } ->
   typeof then == "function"
 
-let runPoint p -> p()
+let runPoint p -> case
+  when typeof p == "function" -> p()
+  else p
+end
 
-let runMonad { value, next } -> case
-  when isPromise v -> .then v runNext
-  else runNext v
+let runMonad { current, next } -> case
+  when isPromise value -> .then value runNext
+  else runNext value
 end where
-  let v = run value
-  let runNext v -> run (next v)
+  let value = run current
+  let runNext value -> run (next value)
 end
 
 let run m -> case
   when isMonad m -> runMonad m
+  else runPoint m
+end
+
+let runSync m -> case
+  when isMonad m ->
+    runSync (next value) where
+      let { current, next } = m
+      let value = runSync current
+    end
   else runPoint m
 end
 
@@ -190,6 +181,8 @@ export {
   map,
   filter,
   reduce,
+  take,
   $,
-  run
+  run,
+  runSync
 }

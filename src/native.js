@@ -209,24 +209,31 @@ const $null = null;
 const $false = false;
 const $true = true;
 
-/*function $var(f, value) {
+function $var(value) {
+  return {
+    value: value
+  };
+}
+
+function getv($var) {
   return function() {
-    if (arguments.length === 0) {
-      return value;
-    }
-    else if (arguments.length === 1) {
-      value = f(value, arguments[0]);
-      return value;
-    }
+    return $var.value;
   }
-}*/
+}
+
+function setv($var, value) {
+  return function() {
+    $var.value = value;
+    return value;
+  }
+}
 
 const $monad = Symbol("monad");
 
-function monad(value, next) {
+function monad(current, next) {
   return {
     [$monad]: true,
-    value: value,
+    current: current,
     next: next
   };
 }
@@ -261,6 +268,18 @@ function transduce$quote(coll, r) {
   return r(res);
 }
 
+function statefun(f, state) {
+  return function() {
+    let args = [state];
+    for(let i = 0; i < arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    const res = f.apply(null, args);
+    state = get(res, 0);
+    return get(res, 1);
+  }
+}
+
 module.exports = {
   $typeof,
   $question,
@@ -290,6 +309,10 @@ module.exports = {
   $true,
   $try,
   $throw,
+  $var,
+  getv,
+  setv,
+  statefun,
   getp,
   hasp,
   invoke,
