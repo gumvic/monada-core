@@ -33,6 +33,7 @@
         "throw",
         "hasp",
         "getp",
+        "invoke",
         "ImMap",
         "ImList",
         "ImRecord",

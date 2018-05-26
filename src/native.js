@@ -16,6 +16,14 @@ function getp(object, property) {
   return object ? object[property] : undefined;
 }
 
+function invoke(object, method) {
+  let args = [];
+  for(let i = 2; i < arguments.length; i++) {
+    args.push(arguments[i]);
+  }
+  return object[method].apply(object, args);
+}
+
 // TODO arguments asserts
 
 function ImRecord() {
@@ -249,6 +257,7 @@ module.exports = {
   $throw,
   getp,
   hasp,
+  invoke,
   ImList,
   ImMap,
   get,
