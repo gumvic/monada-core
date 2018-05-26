@@ -280,6 +280,35 @@ function statefun(f, state) {
   }
 }
 
+function seq(monad) {
+  let current = monad;
+  let nexts = [];
+  function next() {
+    if (isMonad(current)) {
+      nexts.push(monad.next);
+      return next(monad.current);
+    }
+    else {
+      if(!nexts.length) {
+        return {
+          done: true,
+          value: current
+        };
+      }
+      else {
+        const next = nexts.pop();
+        
+        return {
+          value: current
+        };
+      }
+    }
+  }
+  return {
+    next: next
+  };
+}
+
 module.exports = {
   $typeof,
   $question,
