@@ -1,16 +1,12 @@
 module core
 
-import Immutable {
-  fromJS,
-  List -> ImList,
-  Map -> ImMap,
-  get,
-  getIn
-}
-
-import ./native {
+import ./primitives {
   typeof,
-  ?,
+  instanceof,
+  new,
+  try,
+  throw,
+  invoke,
   ==,
   +,
   -,
@@ -34,23 +30,30 @@ import ./native {
   undefined,
   null,
   false,
-  true,
-  try,
-  throw,
+  true
+}
+
+import ./data {
+  fromJS,
+  record,
+  list,
+  hashmap,
+  getp,
+  hasp,
+  get,
+  getIn,
+  set,
+  setIn,
+  has,
   var,
   getv,
   setv,
-  statefun,
-  hasp,
-  getp,
-  invoke,
-  ImRecord,
   monad,
   isMonad,
-  transduce -> transduce',
   done,
   isDone,
-  seq
+  seq,
+  transduce -> transduce'
 }
 
 let size { .size, .length } -> case
@@ -66,19 +69,27 @@ end
 
 # TODO -- reduceFor ES Map, Set etc
 
-let reduceImList -> .asMutable (ImList()) ()
-let reduceImList coll -> .asImmutable coll()
-let reduceImList coll x -> .push coll x
-
-let reduceImMap -> .asMutable (ImMap()) ()
-let reduceImMap coll -> .asImmutable coll()
-let reduceImMap coll [k, v] -> .set coll k v
-
-let reducerFor coll -> case
-  when coll ? ImList -> reduceImList
-  when coll ? ImMap -> reduceImMap
-  else reduceImList
+let nativeReducer coll -> case
+  when init && step && result -> r where
+    let r -> init()
+    let r coll -> result coll
+    let r coll x -> step coll x
+  end
+  else undefined
+end where
+  let init =
+    hasp coll "@@transducer/init" &&
+    \-> invoke coll "@@transducer/init"
+  let step = getp coll "@@transducer/step"
+  let result = getp coll "@@transducer/result"
 end
+
+let defaultReducer -> .asMutable (list()) ()
+let defaultReducer coll -> .asImmutable coll()
+let defaultReducer coll x -> .push coll x
+
+let reducerFor coll ->
+  (nativeReducer coll) || defaultReducer
 
 let transduce coll xf ->
   transduce coll xf (reducerFor coll)
@@ -137,6 +148,34 @@ let take n ->
 let take n coll ->
   transduce coll (take n)
 
+let indexed ->
+  \r -> r' where
+    let i = var 0
+    let r' -> r()
+    let r' res -> r res
+    let r' res x -> runSync do
+      i' = getv i;
+      setv i (i' + 1);
+      r res (x, i');
+    end
+  end
+
+let indexed coll ->
+  transduce coll (indexed)
+
+let untilDone ->
+  \r -> r' where
+    let r' -> r()
+    let r' res -> r res
+    let r' res x -> case
+      when isDone x -> done res
+      else r res x
+    end
+  end
+
+let untilDone coll ->
+  transduce coll untilDone
+
 let f $ g -> \x -> f (g x)
 
 let isPromise { .then } ->
@@ -171,12 +210,14 @@ end
 
 export {
   typeof,
-  ?,
+  instanceof,
+  try,
+  throw,
+  new,
+  invoke,
   ==,
   +,
   -,
-  ~,
-  !,
   *,
   /,
   %,
@@ -184,46 +225,51 @@ export {
   <,
   >=,
   <=,
+  ~,
   |,
   &,
   ^,
   >>,
   <<,
   >>>,
+  !,
   ||,
   &&,
   undefined,
   null,
   false,
   true,
-  try,
-  throw,
-  ImList,
-  ImMap,
-  ImRecord,
-  monad,
-  isMonad,
-  get,
-  hasp,
+
+  fromJS,
+  toJS,
+  size,
+  record,
+  list,
+  hashmap,
   getp,
-  invoke,
+  hasp,
+  get,
+  getIn,
+  set,
+  setIn,
+  has,
   var,
   getv,
   setv,
-  statefun,
-  getIn,
-  size,
-  toJS,
-  fromJS,
-  transduce,
+  monad,
+  isMonad,
   done,
   isDone,
+  seq,
+  transduce,
+
   map,
   filter,
   reduce,
   take,
-  $,
+
   run,
   runSync,
-  seq
+
+  $
 }
