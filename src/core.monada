@@ -49,7 +49,8 @@ import ./native {
   isMonad,
   transduce -> transduce',
   done,
-  isDone
+  isDone,
+  seq
 }
 
 let size { .size, .length } -> case
@@ -242,5 +243,6 @@ export {
   take,
   $,
   run,
-  runSync
+  runSync,
+  seq
 }

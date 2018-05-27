@@ -275,39 +275,41 @@ function statefun(f, state) {
   }
 }
 
-function seq(monad) {
-  let needNextMonad = false;
-  let current = monad;
-  let nextMonads = [];
-  function next() {
-    if (isMonad(current)) {
-      nextMonads.push(monad.next);
-      return next(monad.current);
-    }
-    else if (needNextMonad &&
-            nextMonad.length) {
-      needNextMonad = false;
-      const nextMonad = nextMonads.pop();
-      current = nextMonad(current);
-      return next();
-    }
-    else {
-      if(!nextMonads.length) {
+function stepMonad(m, next) {
+  if(isMonad(m)) {
+    return stepMonad(m.current, _m => stepMonad(m.next(_m), next));
+  }
+  else {
+    return [m, next && (() => next(m))];
+  }
+}
+
+function monadIterator(monad) {
+  return function() {
+    let nextStep = () => stepMonad(monad);
+    function next() {
+      if (!nextStep) {
         return {
-          done: true,
-          value: current
+          done: true
         };
       }
       else {
-        needNextMonad = true;
+        const [value, _nextStep] = nextStep();
+        nextStep = _nextStep;
         return {
-          value: current
+          value
         };
       }
     }
+    return {
+      next
+    };
   }
+}
+
+function seq(monad) {
   return {
-    next: next
+    [Symbol.iterator]: monadIterator(monad)
   };
 }
 
@@ -352,5 +354,6 @@ module.exports = {
   isMonad,
   transduce,
   done,
-  isDone
+  isDone,
+  seq
 };
