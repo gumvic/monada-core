@@ -2,7 +2,54 @@ module core
 
 import Immutable {
   fromJS,
+  List -> ImList,
+  Map -> ImMap,
+  get,
   getIn
+}
+
+import ./native {
+  typeof,
+  ?,
+  ==,
+  +,
+  -,
+  *,
+  /,
+  %,
+  >,
+  <,
+  >=,
+  <=,
+  ~,
+  |,
+  &,
+  ^,
+  >>,
+  <<,
+  >>>,
+  !,
+  ||,
+  &&,
+  undefined,
+  null,
+  false,
+  true,
+  try,
+  throw,
+  var,
+  getv,
+  setv,
+  statefun,
+  hasp,
+  getp,
+  invoke,
+  ImRecord,
+  monad,
+  isMonad,
+  transduce -> transduce',
+  done,
+  isDone
 }
 
 let size { .size, .length } -> case
@@ -72,13 +119,20 @@ let reduce f init coll ->
   transduce coll (reduce f init)
 
 let take n ->
-  \r -> statefun r' where
-    let r' _ -> [0, r()]
+  \r -> statefun r' 0 where
+    let r' _ -> [_, r()]
     let r' _ res -> [_, r res]
     let r' n' res x -> case
       when n' == n -> [n', done res]
       else [n' + 1, r res x]
     end
+  end
+
+let indexed ->
+  \r -> statefun r' 0 where
+    let r' _ -> [_, r()]
+    let r' _ res -> [_, r res]
+    let r' i res x -> [i + 1, r res [x, i]]
   end
 
 let take11 n ->

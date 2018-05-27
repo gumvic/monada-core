@@ -1,9 +1,5 @@
 const Immutable = require("Immutable");
 
-const ImList = Immutable.List;
-
-const ImMap = Immutable.Map;
-
 const RecordFactory = Immutable.Record;
 
 const get = Immutable.get;
@@ -24,7 +20,7 @@ function invoke(object, method) {
   return object[method].apply(object, args);
 }
 
-// TODO arguments asserts
+// TODO arguments asserts everywhere
 
 function ImRecord() {
   let names = [];
@@ -255,8 +251,7 @@ function isDone(x) {
   return x && x[$done];
 }
 
-// transduce'
-function transduce$quote(coll, r) {
+function transduce(coll, r) {
   let res = r();
   for(let x of coll) {
   	res = r(res, x);
@@ -281,23 +276,30 @@ function statefun(f, state) {
 }
 
 function seq(monad) {
+  let needNextMonad = false;
   let current = monad;
-  let nexts = [];
+  let nextMonads = [];
   function next() {
     if (isMonad(current)) {
-      nexts.push(monad.next);
+      nextMonads.push(monad.next);
       return next(monad.current);
     }
+    else if (needNextMonad &&
+            nextMonad.length) {
+      needNextMonad = false;
+      const nextMonad = nextMonads.pop();
+      current = nextMonad(current);
+      return next();
+    }
     else {
-      if(!nexts.length) {
+      if(!nextMonads.length) {
         return {
           done: true,
           value: current
         };
       }
       else {
-        const next = nexts.pop();
-        
+        needNextMonad = true;
         return {
           value: current
         };
@@ -345,13 +347,10 @@ module.exports = {
   getp,
   hasp,
   invoke,
-  ImList,
-  ImMap,
-  get,
   ImRecord,
   monad,
   isMonad,
-  transduce$quote,
+  transduce,
   done,
   isDone
 };
