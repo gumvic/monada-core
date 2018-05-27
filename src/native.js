@@ -253,26 +253,16 @@ function isDone(x) {
 
 function transduce(coll, r) {
   let res = r();
+  if (isDone(res)) {
+    return r(res.value);
+  }
   for(let x of coll) {
-  	res = r(res, x);
+    res = r(res, x);
     if (isDone(res)) {
-      res = res.value;
-      break;
+      return r(res.value);
     }
   }
   return r(res);
-}
-
-function statefun(f, state) {
-  return function() {
-    let args = [state];
-    for(let i = 0; i < arguments.length; i++) {
-      args.push(arguments[i]);
-    }
-    const res = f.apply(null, args);
-    state = get(res, 0);
-    return get(res, 1);
-  }
 }
 
 function stepMonad(m, next) {
@@ -345,7 +335,6 @@ module.exports = {
   $var,
   getv,
   setv,
-  statefun,
   getp,
   hasp,
   invoke,

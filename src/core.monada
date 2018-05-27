@@ -120,35 +120,16 @@ let reduce f init coll ->
   transduce coll (reduce f init)
 
 let take n ->
-  \r -> statefun r' 0 where
-    let r' _ -> [_, r()]
-    let r' _ res -> [_, r res]
-    let r' n' res x -> case
-      when n' == n -> [n', done res]
-      else [n' + 1, r res x]
-    end
-  end
-
-let indexed ->
-  \r -> statefun r' 0 where
-    let r' _ -> [_, r()]
-    let r' _ res -> [_, r res]
-    let r' i res x -> [i + 1, r res [x, i]]
-  end
-
-let take11 n ->
   \r -> r' where
     let v = var 0
     let r' -> r()
     let r' res -> r res
     let r' res x -> runSync do
       n' = getv v;
+      setv v (n' + 1);
       case
         when n' == n -> done res
-        else do
-          setv v (n' + 1);
-          r res x;
-        end
+        else r res x
       end;
     end
   end
