@@ -38,6 +38,7 @@ import ./data {
   record,
   list,
   hashmap,
+  range,
   getp,
   hasp,
   get,
@@ -135,7 +136,7 @@ let take n ->
     let v = var 0
     let r' -> r()
     let r' res -> r res
-    let r' res x -> runSync do
+    let r' res x -> run do
       n' = getv v;
       setv v (n' + 1);
       case
@@ -145,6 +146,26 @@ let take n ->
     end
   end
 
+#{let take11 n ->
+  \r -> statefun r' where
+    let r' n' -> (0, r())
+    let r' n' res -> (n', r res)
+    let r' n' res x -> case
+      when n' == n -> (n', done res)
+      else (n' + 1, r res x)
+    end
+  end
+
+let take111 n ->
+  stateful $ \r -> r' where
+    let r' -> (r(), 0)
+    let r' (res, n') -> (r res, n')
+    let r' (res, n') x -> case
+      when n' == n -> (done res, n')
+      else (r res x, n' + 1)
+    end
+  end}
+
 let take n coll ->
   transduce coll (take n)
 
@@ -153,7 +174,7 @@ let indexed ->
     let i = var 0
     let r' -> r()
     let r' res -> r res
-    let r' res x -> runSync do
+    let r' res x -> run do
       i' = getv i;
       setv i (i' + 1);
       r res (x, i');
@@ -187,6 +208,7 @@ let runPoint p -> case
 end
 
 let runMonad { current, next } -> case
+  when isDone value -> get value :value
   when isPromise value -> .then value runNext
   else runNext value
 end where
@@ -196,15 +218,6 @@ end
 
 let run m -> case
   when isMonad m -> runMonad m
-  else runPoint m
-end
-
-let runSync m -> case
-  when isMonad m ->
-    runSync (next value) where
-      let { current, next } = m
-      let value = runSync current
-    end
   else runPoint m
 end
 
@@ -246,6 +259,7 @@ export {
   record,
   list,
   hashmap,
+  range,
   getp,
   hasp,
   get,
@@ -267,9 +281,9 @@ export {
   filter,
   reduce,
   take,
+  indexed,
 
   run,
-  runSync,
 
   $
 }
