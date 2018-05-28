@@ -54,27 +54,21 @@ const $equals$equals = Immutable.is;
 
 // +
 function $plus(x, y) {
-  if (arguments.length === 1) {
-    return +x;
-  }
-  else if (arguments.length === 2) {
-    return x + y;
-  }
-  else {
-    throw new TypeError(`Bad arity: ${arguments.length}`);
+  switch(arguments.length) {
+    case 0: return 0;
+    case 1: return +x;
+    case 2: return x + y;
+    default: throw new TypeError(`Bad arity: ${arguments.length}`);
   }
 }
 
 // -
 function $dash(x, y) {
-  if (arguments.length === 1) {
-    return -x;
-  }
-  else if (arguments.length === 2) {
-    return x - y;
-  }
-  else {
-    throw new TypeError(`Bad arity: ${arguments.length}`);
+  switch(arguments.length) {
+    case 0: return 0;
+    case 1: return -x;
+    case 2: return x - y;
+    default: throw new TypeError(`Bad arity: ${arguments.length}`);
   }
 }
 

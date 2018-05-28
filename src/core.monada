@@ -146,26 +146,6 @@ let take n ->
     end
   end
 
-#{let take11 n ->
-  \r -> statefun r' where
-    let r' n' -> (0, r())
-    let r' n' res -> (n', r res)
-    let r' n' res x -> case
-      when n' == n -> (n', done res)
-      else (n' + 1, r res x)
-    end
-  end
-
-let take111 n ->
-  stateful $ \r -> r' where
-    let r' -> (r(), 0)
-    let r' (res, n') -> (r res, n')
-    let r' (res, n') x -> case
-      when n' == n -> (done res, n')
-      else (r res x, n' + 1)
-    end
-  end}
-
 let take n coll ->
   transduce coll (take n)
 
@@ -183,19 +163,6 @@ let indexed ->
 
 let indexed coll ->
   transduce coll (indexed)
-
-let untilDone ->
-  \r -> r' where
-    let r' -> r()
-    let r' res -> r res
-    let r' res x -> case
-      when isDone x -> done res
-      else r res x
-    end
-  end
-
-let untilDone coll ->
-  transduce coll untilDone
 
 let f $ g -> \x -> f (g x)
 
