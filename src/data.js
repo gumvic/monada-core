@@ -193,7 +193,7 @@ module.exports = {
   record,
   list,
   hashmap,
-  range,
+  tuple,
   getp,
   hasp,
   get,

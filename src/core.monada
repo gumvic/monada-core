@@ -35,10 +35,10 @@ import ./primitives {
 
 import ./data {
   fromJS,
-  record,
+  tuple,
   list,
   hashmap,
-  range,
+  record,
   getp,
   hasp,
   get,
@@ -149,8 +149,8 @@ let take n ->
 let take n coll ->
   transduce coll (take n)
 
-let indexed ->
-  \r -> r' where
+let indexed r ->
+  r' where
     let i = var 0
     let r' -> r()
     let r' res -> r res
@@ -160,9 +160,6 @@ let indexed ->
       r res (x, i');
     end
   end
-
-let indexed coll ->
-  transduce coll (indexed)
 
 let f $ g -> \x -> f (g x)
 
@@ -223,10 +220,10 @@ export {
   fromJS,
   toJS,
   size,
-  record,
+  tuple,
   list,
   hashmap,
-  range,
+  record,
   getp,
   hasp,
   get,
