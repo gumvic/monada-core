@@ -10,25 +10,6 @@ const has = Immutable.has;
 
 // TODO arguments asserts everywhere
 
-function $var(value) {
-  return {
-    value: value
-  };
-}
-
-function getv($var) {
-  return function() {
-    return $var.value;
-  }
-}
-
-function setv($var, value) {
-  return function() {
-    $var.value = value;
-    return value;
-  }
-}
-
 function hasp(object, property) {
   return object && object[property] !== undefined;
 }
@@ -201,9 +182,6 @@ module.exports = {
   set,
   setIn,
   has,
-  $var,
-  getv,
-  setv,
   monad,
   isMonad,
   done,

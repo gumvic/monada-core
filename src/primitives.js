@@ -162,6 +162,21 @@ const $null = null;
 const $false = false;
 const $true = true;
 
+function $var(value) {
+  return {
+    value: value
+  };
+}
+
+// <~
+function $left$tilda($var, value) {
+  switch(arguments.length) {
+    case 1: return () => $var.value;
+    case 2: return () => $var.value = value;
+    default: throw new TypeError(`Bad arity: ${arguments.length}`);
+  }
+}
+
 module.exports = {
   $typeof,
   $instanceof,
@@ -192,5 +207,7 @@ module.exports = {
   $undefined,
   $null,
   $false,
-  $true
+  $true,
+  $var,
+  $left$tilda
 };

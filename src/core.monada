@@ -30,7 +30,9 @@ import ./primitives {
   undefined,
   null,
   false,
-  true
+  true,
+  var,
+  <~
 }
 
 import ./data {
@@ -46,9 +48,6 @@ import ./data {
   set,
   setIn,
   has,
-  var,
-  getv,
-  setv,
   monad,
   isMonad,
   done,
@@ -137,8 +136,8 @@ let take n ->
     let r' -> r()
     let r' res -> r res
     let r' res x -> run do
-      n' = getv v;
-      setv v (n' + 1);
+      n' = <~ v;
+      n' <~ n' + 1;
       case
         when n' == n -> done res
         else r res x
@@ -155,8 +154,8 @@ let indexed r ->
     let r' -> r()
     let r' res -> r res
     let r' res x -> run do
-      i' = getv i;
-      setv i (i' + 1);
+      i' = <~ i;
+      i <~ (i' + 1);
       r res (x, i');
     end
   end
@@ -232,8 +231,7 @@ export {
   setIn,
   has,
   var,
-  getv,
-  setv,
+  <~,
   monad,
   isMonad,
   done,
