@@ -71,38 +71,35 @@ let size { .size, .length } -> case
 end
 
 let toJS x@{ .toJS } -> case
-  when typeof toJS == "function" -> .toJS x ()
+  when typeof toJS == "function" -> .toJS x
   else x
 end
 
 let toJSON x@{ .toJSON } -> case
-  when typeof toJS == "function" -> .toJSON x ()
+  when typeof toJS == "function" -> .toJSON x
   else undefined
 end
 
 # TODO -- reduceFor ES Map, Set etc
 
-let nativeReducer coll -> case
-  when init && step && result -> r where
-    let r -> init()
-    let r coll -> result coll
-    let r coll x -> step coll x
-  end
-  else undefined
-end where
-  let init =
-    hasp coll "@@transducer/init" &&
-    \-> invoke coll "@@transducer/init"
-  let step = getp coll "@@transducer/step"
-  let result = getp coll "@@transducer/result"
+let reduceList -> .asMutable []
+let reduceList coll -> .asImmutable coll
+let reduceList coll x -> .push coll x
+
+let reduceHashmap -> .asMutable {}
+let reduceHashmap coll -> .asImmutable coll
+let reduceHashmap coll [k, v] -> .set coll k v
+
+let reduceRecord = reduceHashmap
+
+let defaultReducer = reduceList
+
+let reducerFor coll -> case
+  when isList coll -> reduceList
+  when isHashmap coll -> reduceHashmap
+  when isRecord coll -> reduceRecord
+  else defaultReducer
 end
-
-let defaultReducer -> .asMutable (list()) ()
-let defaultReducer coll -> .asImmutable coll()
-let defaultReducer coll x -> .push coll x
-
-let reducerFor coll ->
-  (nativeReducer coll) || defaultReducer
 
 let transduce coll xf ->
   transduce coll xf (reducerFor coll)
@@ -169,7 +166,7 @@ let indexed r ->
     let r' res x -> run do
       i' = <~ i;
       i <~ (i' + 1);
-      r res (x, i');
+      r res [x, i'];
     end
   end
 

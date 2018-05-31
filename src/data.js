@@ -18,8 +18,8 @@ const mergeDeep = Immutable.mergeDeep;
 const mergeWith = Immutable.mergeWith;
 const mergeDeepWith = Immutable.mergeDeepWith;
 const isList = Immutable.List.isList;
-const isHashmap = Immutable.List.isMap;
-const isRecord = Immutable.List.isRecord;
+const isHashmap = Immutable.Map.isMap;
+const isRecord = Immutable.Record.isRecord;
 
 // TODO arguments asserts everywhere
 
@@ -43,22 +43,25 @@ function list(coll) {
   return Immutable.List(coll);
 }
 
-
 function hashmap(coll) {
-  return Immutable.Map(coll);
+  let map = Immutable.Map().asMutable();
+  for(let x of coll) {
+    map = map.set(get(x, 0), get(x, 1));
+  }
+  return map.asImmutable();
 }
 
-function record(names) {
-  const _names = [];
+function record() {
+  let names = [];
   let namesForFactory = {};
-  for(let name of names) {
+  for(let i = 0; i < arguments.length; i++) {
+    const name = arguments[i];
     if (typeof name !== "string") {
       throw new TypeError(`A record field ${name} must be a string.`);
     }
-    _names.push(name);
+    names.push(name);
     namesForFactory[name] = undefined;
   }
-  names = _names;
 
   const Factory = RecordFactory(namesForFactory);
 
