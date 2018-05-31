@@ -39,23 +39,6 @@ function invoke(object, method) {
   return object[method].apply(object, args);
 }
 
-function isTuple(coll) {
-  return Array.isArray(coll);
-}
-
-function tuple(coll) {
-  if(isTuple(coll)) {
-    return coll;
-  }
-  else {
-    let tuple = [];
-    for(let x of coll) {
-      tuple.push(x);
-    }
-    return tuple;
-  }
-}
-
 function list(coll) {
   return Immutable.List(coll);
 }
@@ -66,15 +49,16 @@ function hashmap(coll) {
 }
 
 function record(names) {
-  names = tuple(names);
-
+  const _names = [];
   let namesForFactory = {};
   for(let name of names) {
     if (typeof name !== "string") {
       throw new TypeError(`A record field ${name} must be a string.`);
     }
+    _names.push(name);
     namesForFactory[name] = undefined;
   }
+  names = _names;
 
   const Factory = RecordFactory(namesForFactory);
 
@@ -178,7 +162,6 @@ function seq(monad) {
 module.exports = {
   fromJS,
   fromJSON,
-  tuple,
   list,
   hashmap,
   record,
@@ -203,7 +186,6 @@ module.exports = {
   mergeDeep,
   mergeWith,
   mergeDeepWith,
-  isTuple,
   isList,
   isHashmap,
   isRecord,
