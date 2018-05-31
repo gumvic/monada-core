@@ -157,15 +157,20 @@ function $and$and(x, y) {
   return x && y;
 }
 
-const $undefined = undefined;
-const $null = null;
-const $false = false;
-const $true = true;
-
-function $var(value) {
+/*function $var(value) {
   return {
     value: value
   };
+}*/
+
+function $var(value) {
+  return function(newValue) {
+    switch(arguments.length) {
+      case 0: return value;
+      case 1: return value = newValue;
+      default: throw new TypeError(`Bad arity: ${arguments.length}`);
+    }
+  }
 }
 
 // <~
@@ -204,10 +209,6 @@ module.exports = {
   $bang,
   $pipe$pipe,
   $and$and,
-  $undefined,
-  $null,
-  $false,
-  $true,
   $var,
   $left$tilda
 };

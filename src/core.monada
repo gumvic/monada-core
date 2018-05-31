@@ -27,32 +27,42 @@ import ./primitives {
   !,
   ||,
   &&,
-  undefined,
-  null,
-  false,
-  true,
   var,
   <~
 }
 
 import ./data {
   fromJS,
+  fromJSON,
   tuple,
   list,
   hashmap,
   record,
-  getp,
-  hasp,
-  get,
-  getIn,
-  set,
-  setIn,
-  has,
+  seq,
   monad,
   isMonad,
   done,
   isDone,
-  seq,
+  hasp,
+  getp,
+  has,
+  hasIn,
+  get,
+  getIn,
+  update,
+  updateIn,
+  set,
+  setIn,
+  remove,
+  removeIn,
+  merge,
+  mergeDeep,
+  mergeWith,
+  mergeDeepWith,
+  isTuple,
+  isList,
+  isHashmap,
+  isRecord,
   transduce -> transduce'
 }
 
@@ -65,6 +75,11 @@ end
 let toJS x@{ .toJS } -> case
   when typeof toJS == "function" -> .toJS x ()
   else x
+end
+
+let toJSON x@{ .toJSON } -> case
+  when typeof toJS == "function" -> .toJSON x ()
+  else undefined
 end
 
 # TODO -- reduceFor ES Map, Set etc
@@ -132,14 +147,14 @@ let reduce f init coll ->
 
 let take n ->
   \r -> r' where
-    let v = var 0
+    let v = var 1
     let r' -> r()
     let r' res -> r res
     let r' res x -> run do
-      n' = <~ v;
-      n' <~ n' + 1;
+      n' = v;
+      v (n' + 1);
       case
-        when n' == n -> done res
+        when n' >= n -> done res
         else r res x
       end;
     end
@@ -211,32 +226,43 @@ export {
   !,
   ||,
   &&,
-  undefined,
-  null,
-  false,
-  true,
+  var,
+  <~,
 
   fromJS,
   toJS,
+  fromJSON,
+  toJSON,
   size,
   tuple,
   list,
   hashmap,
   record,
-  getp,
-  hasp,
-  get,
-  getIn,
-  set,
-  setIn,
-  has,
-  var,
-  <~,
+  seq,
   monad,
   isMonad,
   done,
   isDone,
-  seq,
+  hasp,
+  getp,
+  has,
+  hasIn,
+  get,
+  getIn,
+  update,
+  updateIn,
+  set,
+  setIn,
+  remove,
+  removeIn,
+  merge,
+  mergeDeep,
+  mergeWith,
+  mergeDeepWith,
+  isTuple,
+  isList,
+  isHashmap,
+  isRecord,
   transduce,
 
   map,

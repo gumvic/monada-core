@@ -1,12 +1,25 @@
 const Immutable = require("Immutable");
 
 const fromJS = Immutable.fromJS;
+const fromJSON = Immutable.fromJSON;
 const RecordFactory = Immutable.Record;
+const has = Immutable.has;
+const hasIn = Immutable.hasIn;
 const get = Immutable.get;
 const getIn = Immutable.getIn;
+const update = Immutable.update;
+const updateIn = Immutable.updateIn;
 const set = Immutable.set;
 const setIn = Immutable.setIn;
-const has = Immutable.has;
+const remove = Immutable.remove;
+const removeIn = Immutable.removeIn;
+const merge = Immutable.merge;
+const mergeDeep = Immutable.mergeDeep;
+const mergeWith = Immutable.mergeWith;
+const mergeDeepWith = Immutable.mergeDeepWith;
+const isList = Immutable.List.isList;
+const isHashmap = Immutable.List.isMap;
+const isRecord = Immutable.List.isRecord;
 
 // TODO arguments asserts everywhere
 
@@ -26,15 +39,40 @@ function invoke(object, method) {
   return object[method].apply(object, args);
 }
 
-function record() {
-  let names = [];
+function isTuple(coll) {
+  return Array.isArray(coll);
+}
+
+function tuple(coll) {
+  if(isTuple(coll)) {
+    return coll;
+  }
+  else {
+    let tuple = [];
+    for(let x of coll) {
+      tuple.push(x);
+    }
+    return tuple;
+  }
+}
+
+function list(coll) {
+  return Immutable.List(coll);
+}
+
+
+function hashmap(coll) {
+  return Immutable.Map(coll);
+}
+
+function record(names) {
+  names = tuple(names);
+
   let namesForFactory = {};
-  for(let i = 0; i < arguments.length; i++) {
-    const name = arguments[i];
+  for(let name of names) {
     if (typeof name !== "string") {
       throw new TypeError(`A record field ${name} must be a string.`);
     }
-    names.push(name);
     namesForFactory[name] = undefined;
   }
 
@@ -56,38 +94,6 @@ function record() {
   Record.prototype = Object.create(Factory.prototype);
 
   return Record;
-}
-
-function tuple() {
-  let args = [];
-  for(let i = 0; i < arguments.length; i++) {
-    args.push(arguments[i]);
-  }
-  return args;
-}
-
-function list() {
-  let args = [];
-  for(let i = 0; i < arguments.length; i++) {
-    args.push(arguments[i]);
-  }
-  return Immutable.List(args);
-}
-
-function hashmap() {
-  let args = [];
-  for(let i = 0; i < arguments.length; i++) {
-    args.push(arguments[i]);
-  }
-  return Immutable.Map(args);
-}
-
-function range() {
-  let args = [];
-  for(let i = 0; i < arguments.length; i++) {
-    args.push(arguments[i]);
-  }
-  return Immutable.Range.apply(null, args);
 }
 
 const $monad = Symbol("monad");
@@ -171,21 +177,35 @@ function seq(monad) {
 
 module.exports = {
   fromJS,
-  record,
+  fromJSON,
+  tuple,
   list,
   hashmap,
-  tuple,
-  getp,
-  hasp,
-  get,
-  getIn,
-  set,
-  setIn,
-  has,
+  record,
+  seq,
   monad,
   isMonad,
   done,
   isDone,
-  seq,
+  hasp,
+  getp,
+  has,
+  hasIn,
+  get,
+  getIn,
+  update,
+  updateIn,
+  set,
+  setIn,
+  remove,
+  removeIn,
+  merge,
+  mergeDeep,
+  mergeWith,
+  mergeDeepWith,
+  isTuple,
+  isList,
+  isHashmap,
+  isRecord,
   transduce
 };
