@@ -163,24 +163,14 @@ function $and$and(x, y) {
   };
 }*/
 
-function $var(value) {
-  return function(newValue) {
-    switch(arguments.length) {
-      case 0: return value;
-      case 1: return value = newValue;
-      default: throw new TypeError(`Bad arity: ${arguments.length}`);
-    }
-  }
-}
-
 // <~
-function $left$tilda($var, value) {
+/*function $left$tilda($var, value) {
   switch(arguments.length) {
     case 1: return () => $var.value;
     case 2: return () => $var.value = value;
     default: throw new TypeError(`Bad arity: ${arguments.length}`);
   }
-}
+}*/
 
 module.exports = {
   $typeof,
@@ -208,7 +198,5 @@ module.exports = {
   $right$right$right,
   $bang,
   $pipe$pipe,
-  $and$and,
-  $var,
-  $left$tilda
+  $and$and
 };

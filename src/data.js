@@ -162,6 +162,16 @@ function seq(monad) {
   };
 }
 
+function $var(value) {
+  return function(newValue) {
+    switch(arguments.length) {
+      case 0: return value;
+      case 1: return value = newValue;
+      default: throw new TypeError(`Bad arity: ${arguments.length}`);
+    }
+  }
+}
+
 module.exports = {
   fromJS,
   fromJSON,
@@ -192,5 +202,6 @@ module.exports = {
   isList,
   isHashmap,
   isRecord,
-  transduce
+  transduce,
+  $var
 };

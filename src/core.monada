@@ -26,9 +26,7 @@ import ./primitives {
   >>>,
   !,
   ||,
-  &&,
-  var,
-  <~
+  &&
 }
 
 import ./data {
@@ -61,7 +59,8 @@ import ./data {
   isList,
   isHashmap,
   isRecord,
-  transduce -> transduce'
+  transduce -> transduce',
+  var
 }
 
 let size { .size, .length } -> case
@@ -140,14 +139,17 @@ let reduce f init ->
 let reduce f init coll ->
   transduce coll (reduce f init)
 
+let <~ var -> var
+let var <~ value -> \-> var value
+
 let take n ->
   \r -> r' where
     let v = var 1
     let r' -> r()
     let r' res -> r res
     let r' res x -> run do
-      n' = v;
-      v (n' + 1);
+      n' = <~ v;
+      v <~ (n' + 1);
       case
         when n' >= n -> done res
         else r res x
@@ -221,8 +223,6 @@ export {
   !,
   ||,
   &&,
-  var,
-  <~,
 
   fromJS,
   toJS,
@@ -257,6 +257,7 @@ export {
   isHashmap,
   isRecord,
   transduce,
+  var,
 
   map,
   filter,
