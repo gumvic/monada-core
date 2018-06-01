@@ -110,7 +110,7 @@ function isDone(x) {
   return x && x[$done];
 }
 
-function transduce(coll, r) {
+function $for(coll, r) {
   let res = r();
   if (isDone(res)) {
     return r(res.value);
@@ -202,6 +202,6 @@ module.exports = {
   isList,
   isHashmap,
   isRecord,
-  transduce,
+  $for,
   $var
 };

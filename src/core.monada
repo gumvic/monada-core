@@ -59,7 +59,7 @@ import ./data {
   isList,
   isHashmap,
   isRecord,
-  transduce -> transduce',
+  for -> for',
   var
 }
 
@@ -100,11 +100,19 @@ let reducerFor coll -> case
   else defaultReducer
 end
 
-let transduce coll xf ->
-  transduce coll xf (reducerFor coll)
+let monadToXF m -> case
+  when isMonad m -> current $ nextXF where
+    let { current, next } = m
+    let nextXF = monadToXF (next current)
+  end
+  else m
+end
 
-let transduce coll xf r ->
-  transduce' coll (xf r)
+let for coll m ->
+  for' coll (xf r) where
+    let xf = monadToXF m
+    let r = reducerFor coll
+  end
 
 let map f ->
   \r -> r' where
@@ -114,7 +122,7 @@ let map f ->
   end
 
 let map f coll ->
-  transduce coll (map f)
+  for coll (map f)
 
 let filter f ->
   \r -> r' where
@@ -127,24 +135,19 @@ let filter f ->
   end
 
 let filter f coll ->
-  transduce coll (filter f)
+  for coll (filter f)
 
-let reduce f init ->
-  \_ -> r' where
-    let r' -> init
-    let r' res -> res
-    let r' res x -> f res x
-  end
+let reduce r -> \_ -> r
 
-let reduce f init coll ->
-  transduce coll (reduce f init)
+let reduce r coll ->
+  for coll (reduce r)
 
 let <~ var -> var
 let var <~ value -> \-> var value
 
 let take n ->
   \r -> r' where
-    let v = var 1
+    let v = var 0
     let r' -> r()
     let r' res -> r res
     let r' res x -> run do
@@ -158,7 +161,7 @@ let take n ->
   end
 
 let take n coll ->
-  transduce coll (take n)
+  for coll (take n)
 
 let indexed r ->
   r' where
@@ -256,7 +259,7 @@ export {
   isList,
   isHashmap,
   isRecord,
-  transduce,
+  for,
   var,
 
   map,
