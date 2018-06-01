@@ -18,7 +18,7 @@ const mergeDeep = Immutable.mergeDeep;
 const mergeWith = Immutable.mergeWith;
 const mergeDeepWith = Immutable.mergeDeepWith;
 const isList = Immutable.List.isList;
-const isHashmap = Immutable.Map.isMap;
+const isMap = Immutable.Map.isMap;
 const isRecord = Immutable.Record.isRecord;
 
 // TODO arguments asserts everywhere
@@ -39,16 +39,21 @@ function invoke(object, method) {
   return object[method].apply(object, args);
 }
 
-function list(coll) {
+function toList(coll) {
   return Immutable.List(coll);
 }
 
-function hashmap(coll) {
-  let map = Immutable.Map().asMutable();
-  for(let x of coll) {
-    map = map.set(get(x, 0), get(x, 1));
+function toMap(coll) {
+  if (!coll) {
+    return Immutable.Map();
   }
-  return map.asImmutable();
+  else {
+    let map = Immutable.Map().asMutable();
+    for(let x of coll) {
+      map = map.set(get(x, 0), get(x, 1));
+    }
+    return map.asImmutable();
+  }
 }
 
 function record() {
@@ -175,8 +180,8 @@ function $var(value) {
 module.exports = {
   fromJS,
   fromJSON,
-  list,
-  hashmap,
+  toList,
+  toMap,
   record,
   seq,
   monad,
@@ -200,7 +205,7 @@ module.exports = {
   mergeWith,
   mergeDeepWith,
   isList,
-  isHashmap,
+  isMap,
   isRecord,
   $for,
   $var

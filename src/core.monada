@@ -32,8 +32,8 @@ import ./primitives {
 import ./data {
   fromJS,
   fromJSON,
-  list,
-  hashmap,
+  toList,
+  toMap,
   record,
   seq,
   monad,
@@ -57,7 +57,7 @@ import ./data {
   mergeWith,
   mergeDeepWith,
   isList,
-  isHashmap,
+  isMap,
   isRecord,
   for -> for',
   var
@@ -85,17 +85,17 @@ let reduceList -> .asMutable []
 let reduceList coll -> .asImmutable coll
 let reduceList coll x -> .push coll x
 
-let reduceHashmap -> .asMutable {}
-let reduceHashmap coll -> .asImmutable coll
-let reduceHashmap coll [k, v] -> .set coll k v
+let reduceMap -> .asMutable {}
+let reduceMap coll -> .asImmutable coll
+let reduceMap coll [k, v] -> .set coll k v
 
-let reduceRecord = reduceHashmap
+let reduceRecord = reduceMap
 
 let defaultReducer = reduceList
 
 let reducerFor coll -> case
   when isList coll -> reduceList
-  when isHashmap coll -> reduceHashmap
+  when isMap coll -> reduceMap
   when isRecord coll -> reduceRecord
   else defaultReducer
 end
@@ -232,8 +232,8 @@ export {
   fromJSON,
   toJSON,
   size,
-  list,
-  hashmap,
+  toList,
+  toMap,
   record,
   seq,
   monad,
@@ -257,7 +257,7 @@ export {
   mergeWith,
   mergeDeepWith,
   isList,
-  isHashmap,
+  isMap,
   isRecord,
   for,
   var,
