@@ -142,17 +142,14 @@ let reduce r -> \_ -> r
 let reduce r coll ->
   for coll (reduce r)
 
-let <~ var -> var
-let var <~ value -> \-> var value
-
 let take n ->
   \r -> r' where
     let v = var 0
     let r' -> r()
     let r' res -> r res
     let r' res x -> run do
-      n' = <~ v
-      v <~ (n' + 1)
+      n' = v
+      v (n' + 1)
       case
         when n' >= n -> done res
         else r res x
@@ -169,8 +166,8 @@ let indexed r ->
     let r' -> r()
     let r' res -> r res
     let r' res x -> run do
-      i' = <~ i
-      i <~ (i' + 1)
+      i' = i
+      i (i' + 1)
       r res [x, i']
     end
   end

@@ -44,15 +44,15 @@ function toList(coll) {
 }
 
 function toMap(coll) {
-  if (!coll) {
-    return Immutable.Map();
-  }
-  else {
+  if (coll && typeof coll[Symbol.iterator] === "function") {
     let map = Immutable.Map().asMutable();
     for(let x of coll) {
       map = map.set(get(x, 0), get(x, 1));
     }
     return map.asImmutable();
+  }
+  else {
+    return Immutable.Map(coll);
   }
 }
 
