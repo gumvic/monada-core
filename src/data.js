@@ -88,42 +88,54 @@ function record() {
   return Record;
 }
 
-const $monad = Symbol("monad");
+const $isMonad = Symbol("isMonad");
 
-function monad(current, next) {
+function monad(node, next) {
   return {
-    [$monad]: true,
-    current: current,
+    [$isMonad]: true,
+    node: node,
     next: next
   };
 }
 
 function isMonad(x) {
-  return x && x[$monad];
+  return x && x[$isMonad];
 }
 
-const $done = Symbol("done");
+function monadNode(monad) {
+  return monad.node;
+}
+
+function monadNext(monad) {
+  return monad.next;
+}
+
+const $isDone = Symbol("isDone");
 
 function done(value) {
   return {
-    [$done]: true,
+    [$isDone]: true,
     value: value
   };
 }
 
 function isDone(x) {
-  return x && x[$done];
+  return x && x[$isDone];
+}
+
+function doneValue(done) {
+  return done.value;
 }
 
 function $for(coll, r) {
   let res = r();
   if (isDone(res)) {
-    return r(res.value);
+    return r(doneValue(res));
   }
   for(let x of coll) {
     res = r(res, x);
     if (isDone(res)) {
-      return r(res.value);
+      return r(doneValue(res));
     }
   }
   return r(res);
@@ -143,12 +155,12 @@ function monadIterator(monad) {
         const step = steps.pop();
         value = step(value);
         while(isMonad(value)) {
-          steps.push(value.next);
-          value = value.current;
+          steps.push(monadNext(value));
+          value = monadNode(value);
         }
         if (isDone(value)) {
           steps = [];
-          value = value.value;
+          value = doneValue(value);
         }
         return {
           value
@@ -186,8 +198,11 @@ module.exports = {
   seq,
   monad,
   isMonad,
+  monadNode,
+  monadNext,
   done,
   isDone,
+  doneValue,
   hasp,
   getp,
   has,

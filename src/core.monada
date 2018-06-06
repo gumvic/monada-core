@@ -38,8 +38,11 @@ import ./data {
   seq,
   monad,
   isMonad,
+  monadNode,
+  monadNext,
   done,
   isDone,
+  doneValue,
   hasp,
   getp,
   has,
@@ -101,9 +104,10 @@ let reducerFor coll -> case
 end
 
 let monadToXF m -> case
-  when isMonad m -> current $ nextXF where
-    let { current, next } = m
-    let nextXF = monadToXF (next current)
+  when isMonad m -> xf $ nextXF where
+    let xf = monadNode m
+    let next = monadNext m
+    let nextXF = monadToXF (next xf)
   end
   else m
 end
@@ -182,12 +186,14 @@ let runPoint p -> case
   else p
 end
 
-let runMonad { current, next } -> case
-  when isDone value -> get value :value
+let runMonad m -> case
+  #when isDone value -> value
   when isPromise value -> .then value runNext
   else runNext value
 where
-  let value = run current
+  let node = monadNode m
+  let next = monadNext m
+  let value = run node
   let runNext value -> run (next value)
 end
 
@@ -235,8 +241,11 @@ export {
   seq,
   monad,
   isMonad,
+  monadNode,
+  monadNext,
   done,
   isDone,
+  doneValue,
   hasp,
   getp,
   has,
