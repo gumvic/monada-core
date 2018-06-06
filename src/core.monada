@@ -29,20 +29,15 @@ import ./primitives {
   &&
 }
 
-import ./data {
+import ./coll {
   fromJS,
   fromJSON,
-  toList,
-  toMap,
+  List,
+  Map,
   record,
   seq,
-  monad,
-  isMonad,
-  monadNode,
-  monadNext,
-  done,
-  isDone,
-  doneValue,
+  Monad,
+  Done,
   hasp,
   getp,
   has,
@@ -104,10 +99,9 @@ let reducerFor coll -> case
 end
 
 let monadToXF m -> case
-  when isMonad m -> xf $ nextXF where
-    let xf = monadNode m
-    let next = monadNext m
-    let nextXF = monadToXF (next xf)
+  when isMonad m -> node $ nextXF where
+    let { node, next } = m
+    let nextXF = monadToXF (next node)
   end
   else m
 end
@@ -155,7 +149,7 @@ let take n ->
       n' = v
       v (n' + 1)
       case
-        when n' >= n -> done res
+        when n' >= n -> Done res
         else r res x
       end
     end
@@ -186,13 +180,10 @@ let runPoint p -> case
   else p
 end
 
-let runMonad m -> case
-  #when isDone value -> value
+let runMonad { node, next } -> case
   when isPromise value -> .then value runNext
   else runNext value
 where
-  let node = monadNode m
-  let next = monadNext m
   let value = run node
   let runNext value -> run (next value)
 end
@@ -235,17 +226,12 @@ export {
   fromJSON,
   toJSON,
   size,
-  toList,
-  toMap,
+  List,
+  Map,
   record,
   seq,
-  monad,
-  isMonad,
-  monadNode,
-  monadNext,
-  done,
-  isDone,
-  doneValue,
+  Monad,
+  Done,
   hasp,
   getp,
   has,

@@ -17,9 +17,8 @@ const merge = Immutable.merge;
 const mergeDeep = Immutable.mergeDeep;
 const mergeWith = Immutable.mergeWith;
 const mergeDeepWith = Immutable.mergeDeepWith;
-const isList = Immutable.List.isList;
-const isMap = Immutable.Map.isMap;
-const isRecord = Immutable.Record.isRecord;
+const isList = Immutable.Record.isList;
+const isMap = Immutable.Record.isMap;
 
 // TODO arguments asserts everywhere
 
@@ -39,24 +38,17 @@ function invoke(object, method) {
   return object[method].apply(object, args);
 }
 
-function toList(coll) {
-  return Immutable.List(coll);
+const List = Immutable.List;
+
+function Map(coll) {
+  let map = Immutable.Map().asMutable();
+  for(let x of coll) {
+    map = map.set(get(x, 0), get(x, 1));
+  }
+  return map.asImmutable();
 }
 
-function toMap(coll) {
-  if (coll && typeof coll[Symbol.iterator] === "function") {
-    let map = Immutable.Map().asMutable();
-    for(let x of coll) {
-      map = map.set(get(x, 0), get(x, 1));
-    }
-    return map.asImmutable();
-  }
-  else {
-    return Immutable.Map(coll);
-  }
-}
-
-function record() {
+/*function Record() {
   let names = [];
   let namesForFactory = {};
   for(let i = 0; i < arguments.length; i++) {
@@ -85,57 +77,77 @@ function record() {
 
   Record.prototype = Object.create(Factory.prototype);
 
-  return Record;
+  function isRecord(x) {
+    return x instanceof Record;
+  }
+
+  return {
+    ctor: Record,
+    predicate: isRecord
+  };
+}*/
+
+const $recordCtor = Symbol("recordCtor");
+
+function recordCtorOf1(a) {
+  function ctor(av) {
+    return {
+      [$recordCtor]: ctor,
+      [a]: av
+    };
+  }
+  return ctor;
 }
 
-const $isMonad = Symbol("isMonad");
+function recordCtorOf2(a, b) {
+  function ctor(av, bv) {
+    return {
+      [$recordCtor]: ctor,
+      [a]: av,
+      [b]: bv
+    };
+  }
+  return ctor;
+}
 
-function monad(node, next) {
+// TODO up to 8
+function record(a, b, c, d, e, f, g, h) {
+  let ctor = null;
+  switch(names.length) {
+    case 1: ctor = recordCtorOf1(a); break;
+    case 2: ctor = recordCtorOf2(a, b); break;
+    default: throw new TypeError(`Too less or too many fields for a record: ${arguments.length}`);
+  }
+  function predicate(x) {
+    return x && x[$recordCtor] === ctor;
+  }
   return {
-    [$isMonad]: true,
-    node: node,
-    next: next
+    ctor,
+    predicate
   };
 }
 
-function isMonad(x) {
-  return x && x[$isMonad];
+function isRecord(x) {
+  return x && x[$recordCtor];
 }
 
-function monadNode(monad) {
-  return monad.node;
-}
+const MonadRecord = record("node", "next");
+const Monad = MonadRecord.ctor;
+const isMonad = MonadRecord.predicate;
 
-function monadNext(monad) {
-  return monad.next;
-}
-
-const $isDone = Symbol("isDone");
-
-function done(value) {
-  return {
-    [$isDone]: true,
-    value: value
-  };
-}
-
-function isDone(x) {
-  return x && x[$isDone];
-}
-
-function doneValue(done) {
-  return done.value;
-}
+const DoneRecord = record("value");
+const Done = DoneRecord.ctor;
+const isDone = DoneRecord.predicate;
 
 function $for(coll, r) {
   let res = r();
   if (isDone(res)) {
-    return r(doneValue(res));
+    return r(res.value);
   }
   for(let x of coll) {
     res = r(res, x);
     if (isDone(res)) {
-      return r(doneValue(res));
+      return r(res.value);
     }
   }
   return r(res);
@@ -155,12 +167,12 @@ function monadIterator(monad) {
         const step = steps.pop();
         value = step(value);
         while(isMonad(value)) {
-          steps.push(monadNext(value));
-          value = monadNode(value);
+          steps.push(value.next);
+          value = value.node;
         }
         if (isDone(value)) {
           steps = [];
-          value = doneValue(value);
+          value = value.value;
         }
         return {
           value
@@ -192,17 +204,12 @@ function $var(value) {
 module.exports = {
   fromJS,
   fromJSON,
-  toList,
-  toMap,
+  List,
+  Map,
   record,
   seq,
-  monad,
-  isMonad,
-  monadNode,
-  monadNext,
-  done,
-  isDone,
-  doneValue,
+  Monad,
+  Done,
   hasp,
   getp,
   has,
