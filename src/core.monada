@@ -37,7 +37,9 @@ import ./coll {
   record,
   seq,
   Monad,
+  isMonad,
   Done,
+  isDone,
   hasp,
   getp,
   has,
@@ -79,22 +81,27 @@ end
 
 # TODO -- reduceFor ES Map, Set etc
 
-let reduceList -> .asMutable []
+let reduceList() -> .asMutable []
 let reduceList coll -> .asImmutable coll
 let reduceList coll x -> .push coll x
 
-let reduceMap -> .asMutable {}
+let reduceMap() -> .asMutable {}
 let reduceMap coll -> .asImmutable coll
 let reduceMap coll [k, v] -> .set coll k v
 
-let reduceRecord = reduceMap
+let reduceRecord coll ->
+  r where
+    let r() -> coll
+    let r res -> res
+    let r res [k, v] -> .set coll k v
+  end
 
 let defaultReducer = reduceList
 
 let reducerFor coll -> case
   when isList coll -> reduceList
   when isMap coll -> reduceMap
-  when isRecord coll -> reduceRecord
+  when isRecord coll -> reduceRecord coll
   else defaultReducer
 end
 
@@ -114,7 +121,7 @@ let for coll m ->
 
 let map f ->
   \r -> r' where
-    let r' -> r()
+    let r'() -> r()
     let r' res -> r res
     let r' res x -> r res (f x)
   end
@@ -124,7 +131,7 @@ let map f coll ->
 
 let filter f ->
   \r -> r' where
-    let r' -> r()
+    let r'() -> r()
     let r' res -> r res
     let r' res x -> case
       when f x -> r res x
@@ -143,7 +150,7 @@ let reduce r coll ->
 let take n ->
   \r -> r' where
     let v = var 0
-    let r' -> r()
+    let r'() -> r()
     let r' res -> r res
     let r' res x -> run do
       n' = v
@@ -161,7 +168,7 @@ let take n coll ->
 let indexed r ->
   r' where
     let i = var 0
-    let r' -> r()
+    let r'() -> r()
     let r' res -> r res
     let r' res x -> run do
       i' = i

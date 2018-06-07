@@ -2,7 +2,6 @@ const Immutable = require("Immutable");
 
 const fromJS = Immutable.fromJS;
 const fromJSON = Immutable.fromJSON;
-const RecordFactory = Immutable.Record;
 const has = Immutable.has;
 const hasIn = Immutable.hasIn;
 const get = Immutable.get;
@@ -17,8 +16,9 @@ const merge = Immutable.merge;
 const mergeDeep = Immutable.mergeDeep;
 const mergeWith = Immutable.mergeWith;
 const mergeDeepWith = Immutable.mergeDeepWith;
-const isList = Immutable.Record.isList;
-const isMap = Immutable.Record.isMap;
+const isList = Immutable.List.isList;
+const isMap = Immutable.Map.isMap;
+const isRecord = Immutable.Record.isRecord;
 
 // TODO arguments asserts everywhere
 
@@ -48,106 +48,67 @@ function Map(coll) {
   return map.asImmutable();
 }
 
-/*function Record() {
-  let names = [];
-  let namesForFactory = {};
-  for(let i = 0; i < arguments.length; i++) {
-    const name = arguments[i];
-    if (typeof name !== "string") {
-      throw new TypeError(`A record field ${name} must be a string.`);
-    }
-    names.push(name);
-    namesForFactory[name] = undefined;
-  }
+function recordOf1(name, a) {
+  const Factory = Immutable.Record({
+    [a]: undefined
+  }, name);
 
-  const Factory = RecordFactory(namesForFactory);
-
-  function Record() {
+  function Record(av) {
     const record = Object.create(Record.prototype);
     Factory.call(record);
-    return record.withMutations(record => {
-      for(let i = 0; i < names.length; i++) {
-        const name = names[i];
-        const value = arguments[i];
-        record = record.set(name, value);
-      }
-      return record;
-    });
+    return record.set(a, av);
   }
 
   Record.prototype = Object.create(Factory.prototype);
 
-  function isRecord(x) {
-    return x instanceof Record;
-  }
-
-  return {
-    ctor: Record,
-    predicate: isRecord
-  };
-}*/
-
-const $recordCtor = Symbol("recordCtor");
-
-function recordCtorOf1(a) {
-  function ctor(av) {
-    return {
-      [$recordCtor]: ctor,
-      [a]: av
-    };
-  }
-  return ctor;
+  return Record;
 }
 
-function recordCtorOf2(a, b) {
-  function ctor(av, bv) {
-    return {
-      [$recordCtor]: ctor,
-      [a]: av,
-      [b]: bv
-    };
+function recordOf2(name, a, b) {
+  const Factory = Immutable.Record({
+    [a]: undefined,
+    [b]: undefined
+  }, name);
+
+  function Record(av, bv) {
+    const record = Object.create(Record.prototype);
+    Factory.call(record);
+    return record.set(a, av).set(b, bv);
   }
-  return ctor;
+
+  Record.prototype = Object.create(Factory.prototype);
+
+  return Record;
 }
 
 // TODO up to 8
-function record(a, b, c, d, e, f, g, h) {
-  let ctor = null;
-  switch(names.length) {
-    case 1: ctor = recordCtorOf1(a); break;
-    case 2: ctor = recordCtorOf2(a, b); break;
-    default: throw new TypeError(`Too less or too many fields for a record: ${arguments.length}`);
+function record(name, a, b, c, d, e, f, g, h) {
+  switch(arguments.length - 1) {
+    case 1: return recordOf1(name, a); break;
+    case 2: return recordOf2(name, a, b); break;
+    default: throw new TypeError(`Too few or too many fields for a record: ${arguments.length}`);
   }
-  function predicate(x) {
-    return x && x[$recordCtor] === ctor;
-  }
-  return {
-    ctor,
-    predicate
-  };
 }
 
-function isRecord(x) {
-  return x && x[$recordCtor];
+const Monad = record("Monad", "node", "next");
+function isMonad(x) {
+  return x instanceof Monad;
 }
 
-const MonadRecord = record("node", "next");
-const Monad = MonadRecord.ctor;
-const isMonad = MonadRecord.predicate;
-
-const DoneRecord = record("value");
-const Done = DoneRecord.ctor;
-const isDone = DoneRecord.predicate;
+const Done = record("Done", "value");
+function isDone(x) {
+  return x instanceof Done;
+}
 
 function $for(coll, r) {
   let res = r();
   if (isDone(res)) {
-    return r(res.value);
+    return r(get(res, "value"));
   }
   for(let x of coll) {
     res = r(res, x);
     if (isDone(res)) {
-      return r(res.value);
+      return r(get(res, "value"));
     }
   }
   return r(res);
@@ -167,12 +128,12 @@ function monadIterator(monad) {
         const step = steps.pop();
         value = step(value);
         while(isMonad(value)) {
-          steps.push(value.next);
-          value = value.node;
+          steps.push(get(value, "next"));
+          value = get(value, "node");
         }
         if (isDone(value)) {
           steps = [];
-          value = value.value;
+          value = get(value, "value");
         }
         return {
           value
@@ -209,7 +170,9 @@ module.exports = {
   record,
   seq,
   Monad,
+  isMonad,
   Done,
+  isDone,
   hasp,
   getp,
   has,
