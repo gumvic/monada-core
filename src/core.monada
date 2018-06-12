@@ -60,7 +60,10 @@ import ./coll {
   isMap,
   isRecord,
   for -> for',
-  var
+  var,
+  check,
+  aMap,
+  aFunction
 }
 
 let size { .size, .length } -> case
@@ -260,6 +263,10 @@ export {
   isRecord,
   for,
   var,
+
+  check,
+  aMap,
+  aFunction,
 
   map,
   filter,

@@ -162,6 +162,79 @@ function $var(value) {
   }
 }
 
+// TODO move to core.monada
+function check(spec, value) {
+  switch(arguments.length) {
+    case 2: return spec(value);
+    default: throw new TypeError(`Bad arity: ${arguments.length}`);
+  }
+}
+
+function aMap(map) {
+  const m = Immutable.Map().withMutations(m => {
+    for(let [k, v] of map) {
+      m.set(k, v());
+    }
+    return m;
+  });
+  return function(value) {
+    switch(arguments.length) {
+      case 0:
+        return m;
+      case 1:
+        if (!isMap(value)) {
+          return `${value} is not a map`;
+        }
+        for(let [k, v] of map) {
+          const error = check(v, get(value, k));
+          if (error) {
+            return `${k}: ${error}`;
+          }
+        }
+        return undefined;
+      default:
+        throw new TypeError(`Bad arity: ${arguments.length}`);
+    }
+  }
+}
+
+// TODO move to core.monada
+function aFunction(args, res) {
+  const _args = args;
+  args = [];
+  for(let arg of _args) {
+    args.push(arg);
+  }
+  function f() {
+    if (arguments.length !== args.length) {
+      throw new TypeError(`Bad arity: ${arguments.length}`);
+    }
+    for(let i = 0; i < arguments.length; i++) {
+      const spec = args[i];
+      const value = arguments[i];
+      const error = check(spec, value);
+      if (error) {
+        throw error;
+      }
+    }
+    return res();
+  }
+  return function(value) {
+    switch(arguments.length) {
+      case 0:
+        return f;
+      case 1:
+        if (typeof value !== "function") {
+          return `${value} is not a function`;
+        }
+        const actualRes = value.apply(null, args.map(spec => spec()));
+        return check(res, actualRes);
+      default:
+        throw new TypeError(`Bad arity: ${arguments.length}`);
+    }
+  }
+}
+
 module.exports = {
   fromJS,
   fromJSON,
@@ -193,5 +266,9 @@ module.exports = {
   isMap,
   isRecord,
   $for,
-  $var
+  $var,
+
+  check,
+  aMap,
+  aFunction
 };
