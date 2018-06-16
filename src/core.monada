@@ -66,141 +66,141 @@ import ./coll {
   aFunction
 }
 
-let size { .size, .length } -> case
-  when typeof size == "number" -> size
-  when typeof length == "number" -> length
-  else 0
+size { .size, .length } = case
+  typeof size == "number" -> size
+  typeof length == "number" -> length
+  -> 0
 end
 
-let toJS x@{ .toJS } -> case
-  when typeof toJS == "function" -> .toJS x
-  else x
+toJS x@{ .toJS } = case
+  typeof toJS == "function" -> .toJS x
+  -> x
 end
 
-let toJSON x@{ .toJSON } -> case
-  when typeof toJS == "function" -> .toJSON x
-  else undefined
+toJSON x@{ .toJSON } = case
+  typeof toJS == "function" -> .toJSON x
+  -> _
 end
 
 # TODO -- reduceFor ES Map, Set etc
 
-let reduceList() -> .asMutable []
-let reduceList coll -> .asImmutable coll
-let reduceList coll x -> .push coll x
+reduceList () = .asMutable []
+reduceList coll = .asImmutable coll
+reduceList coll x = .push coll x
 
-let reduceMap() -> .asMutable {}
-let reduceMap coll -> .asImmutable coll
-let reduceMap coll [k, v] -> .set coll k v
+reduceMap () = .asMutable {}
+reduceMap coll = .asImmutable coll
+reduceMap coll [k, v] = .set coll k v
 
-let reduceRecord coll ->
+reduceRecord coll =
   r where
-    let r() -> coll
-    let r res -> res
-    let r res [k, v] -> .set coll k v
+    r () = coll
+    r res = res
+    r res [k, v] = .set coll k v
   end
 
-let defaultReducer = reduceList
+defaultReducer = reduceList
 
-let reducerFor coll -> case
-  when isList coll -> reduceList
-  when isMap coll -> reduceMap
-  when isRecord coll -> reduceRecord coll
-  else defaultReducer
+reducerFor coll = case
+  isList coll -> reduceList
+  isMap coll -> reduceMap
+  isRecord coll -> reduceRecord coll
+  -> defaultReducer
 end
 
-let monadToXF m -> case
-  when isMonad m -> node $ nextXF where
-    let { node, next } = m
-    let nextXF = monadToXF (next node)
+monadToXF m = case
+  isMonad m -> node $ nextXF where
+    { node, next } = m
+    nextXF = monadToXF (next node)
   end
-  else m
+  -> m
 end
 
-let for coll m ->
+for coll m =
   for' coll (xf r) where
-    let xf = monadToXF m
-    let r = reducerFor coll
+    xf = monadToXF m
+    r = reducerFor coll
   end
 
-let map f ->
+map f =
   \r -> r' where
-    let r'() -> r()
-    let r' res -> r res
-    let r' res x -> r res (f x)
+    r' () = r ()
+    r' res = r res
+    r' res x = r res (f x)
   end
 
-let map f coll ->
+map f coll =
   for coll (map f)
 
-let filter f ->
+filter f =
   \r -> r' where
-    let r'() -> r()
-    let r' res -> r res
-    let r' res x -> case
-      when f x -> r res x
-      else res
+    r' () = r ()
+    r' res = r res
+    r' res x = case
+      f x -> r res x
+      -> res
     end
   end
 
-let filter f coll ->
+filter f coll =
   for coll (filter f)
 
-let reduce r -> \_ -> r
+reduce r = \_ -> r
 
-let reduce r coll ->
+reduce r coll =
   for coll (reduce r)
 
-let take n ->
+take n =
   \r -> r' where
-    let v = var 0
-    let r'() -> r()
-    let r' res -> r res
-    let r' res x -> run do
-      n' = v
+    v = var 0
+    r' () = r ()
+    r' res = r res
+    r' res x = run do
+      n' <- v
       v (n' + 1)
       case
-        when n' >= n -> Done res
-        else r res x
+        n' >= n -> Done res
+        -> r res x
       end
     end
   end
 
-let take n coll ->
+take n coll =
   for coll (take n)
 
-let indexed r ->
+indexed r =
   r' where
-    let i = var 0
-    let r'() -> r()
-    let r' res -> r res
-    let r' res x -> run do
-      i' = i
+    i = var 0
+    r' () = r ()
+    r' res = r res
+    r' res x = run do
+      i' <- i
       i (i' + 1)
       r res [x, i']
     end
   end
 
-let f $ g -> \x -> f (g x)
+f $ g = \x -> f (g x)
 
-let isPromise { .then } ->
+isPromise { .then } =
   typeof then == "function"
 
-let runPoint p -> case
-  when typeof p == "function" -> p()
-  else p
+runPoint p = case
+  typeof p == "function" -> p ()
+  -> p
 end
 
-let runMonad { node, next } -> case
-  when isPromise value -> .then value runNext
-  else runNext value
+runMonad { node, next } = case
+  isPromise value -> .then value runNext
+  -> runNext value
 where
-  let value = run node
-  let runNext value -> run (next value)
+  value = run node
+  runNext value = run (next value)
 end
 
-let run m -> case
-  when isMonad m -> runMonad m
-  else runPoint m
+run m = case
+  isMonad m -> runMonad m
+  -> runPoint m
 end
 
 export {

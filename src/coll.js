@@ -182,9 +182,6 @@ function aMap(map) {
       case 0:
         return m;
       case 1:
-        if (!isMap(value)) {
-          return `${value} is not a map`;
-        }
         for(let [k, v] of map) {
           const error = check(v, get(value, k));
           if (error) {
