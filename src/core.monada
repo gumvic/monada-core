@@ -62,6 +62,7 @@ import ./coll {
   for -> for',
   var,
   check,
+  any,
   aMap,
   aFunction
 }
@@ -265,6 +266,7 @@ export {
   var,
 
   check,
+  any,
   aMap,
   aFunction,
 

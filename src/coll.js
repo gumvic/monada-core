@@ -170,6 +170,19 @@ function check(spec, value) {
   }
 }
 
+// TODO move to core.monada
+function any() {
+  switch(arguments.length) {
+    case 0:
+      return undefined;
+    case 1:
+      return undefined;
+    default:
+      throw new TypeError(`Bad arity: ${arguments.length}`);
+  }
+}
+
+// TODO move to core.monada
 function aMap(map) {
   const m = Immutable.Map().withMutations(m => {
     for(let [k, v] of map) {
@@ -266,6 +279,7 @@ module.exports = {
   $var,
 
   check,
+  any,
   aMap,
   aFunction
 };
