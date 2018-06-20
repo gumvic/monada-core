@@ -162,21 +162,33 @@ function $var(value) {
   }
 }
 
+function isError(x) {
+  return x instanceof Error;
+}
+
+function error(x) {
+  return new Error(x);
+}
+
 // TODO move to core.monada
-function check(spec, value) {
+function coerce(spec, value) {
   switch(arguments.length) {
     case 2: return spec(value);
     default: throw new TypeError(`Bad arity: ${arguments.length}`);
   }
 }
 
+function generate(spec) {
+  return spec();
+}
+
 // TODO move to core.monada
-function any() {
+function any(x) {
   switch(arguments.length) {
     case 0:
       return undefined;
     case 1:
-      return undefined;
+      return x;
     default:
       throw new TypeError(`Bad arity: ${arguments.length}`);
   }
@@ -186,7 +198,7 @@ function any() {
 function aMap(map) {
   const m = Immutable.Map().withMutations(m => {
     for(let [k, v] of map) {
-      m.set(k, v());
+      m.set(k, generate(v));
     }
     return m;
   });
@@ -195,39 +207,31 @@ function aMap(map) {
       case 0:
         return m;
       case 1:
-        for(let [k, v] of map) {
-          const error = check(v, get(value, k));
-          if (error) {
-            return `${k}: ${error}`;
+        let value_ = Immutable.Map().asMutable();
+        for(let [k, spec] of map) {
+          const coercedV = coerce(spec, get(value, k));
+          if (isError(coercedV)) {
+            return error(`{ ${k} -> ${coercedV.message} }`);
+          }
+          else {
+            value_ = value_.set(k, coercedV);
           }
         }
-        return undefined;
+        return value_.asImmutable();
       default:
         throw new TypeError(`Bad arity: ${arguments.length}`);
     }
   }
 }
 
-// TODO move to core.monada
-function aFunction(args, res) {
-  const _args = args;
-  args = [];
-  for(let arg of _args) {
-    args.push(arg);
-  }
+function aFunctionOf0(res) {
+  const arity = 0;
+  const res_ = generate(res);
   function f() {
-    if (arguments.length !== args.length) {
+    if (arguments.length !== arity) {
       throw new TypeError(`Bad arity: ${arguments.length}`);
     }
-    for(let i = 0; i < arguments.length; i++) {
-      const spec = args[i];
-      const value = arguments[i];
-      const error = check(spec, value);
-      if (error) {
-        throw error;
-      }
-    }
-    return res();
+    return res_;
   }
   return function(value) {
     switch(arguments.length) {
@@ -237,11 +241,86 @@ function aFunction(args, res) {
         if (typeof value !== "function") {
           return `${value} is not a function`;
         }
-        const actualRes = value.apply(null, args.map(spec => spec()));
-        return check(res, actualRes);
+        function value_() {
+          if (arguments.length !== arity) {
+            throw new TypeError(`Bad arity: ${arguments.length}`);
+          }
+          const res_ = value();
+          const coercedRes = coerce(res, res_);
+          if (isError(coercedRes)) {
+            throw coercedRes;
+          }
+          return res_;
+        }
+        const res_ = value();
+        const coercedRes = coerce(res, res_);
+        if (isError(coercedRes)) {
+          throw coercedRes;
+        }
+        else {
+          return value_;
+        }
       default:
         throw new TypeError(`Bad arity: ${arguments.length}`);
     }
+  }
+}
+
+function aFunctionOf1(a, res) {
+  const arity = 1;
+  const res_ = generate(res);
+  function f(a_) {
+    if (arguments.length !== arity) {
+      throw new TypeError(`Bad arity: ${arguments.length}`);
+    }
+    const coercedA = coerce(a, a_);
+    if (isError(coercedA)) {
+      throw coercedA;
+    }
+    return res_;
+  }
+  return function(value) {
+    switch(arguments.length) {
+      case 0:
+        return f;
+      case 1:
+        if (typeof value !== "function") {
+          return `${value} is not a function`;
+        }
+        function value_(a_) {
+          if (arguments.length !== arity) {
+            throw new TypeError(`Bad arity: ${arguments.length}`);
+          }
+          const coercedA = coerce(a, a_);
+          if (isError(coercedA)) {
+            throw coercedA;
+          }
+          const res_ = value(coercedA);
+          const coercedRes = coerce(res, res_);
+          if (isError(coercedRes)) {
+            throw coercedRes;
+          }
+          return res_;
+        }
+        const res_ = value_(generate(a));
+        const coercedRes = coerce(res, res_);
+        if (isError(coercedRes)) {
+          throw coercedRes;
+        }
+        else {
+          return value_;
+        }
+      default:
+        throw new TypeError(`Bad arity: ${arguments.length}`);
+    }
+  }
+}
+
+function aFunction(a, b) {
+  switch(arguments.length) {
+    case 1: return aFunctionOf0(a);
+    case 2: return aFunctionOf1(a, b);
+    default: throw new TypeError(`Bad arity: ${arguments.length}`);
   }
 }
 
@@ -278,7 +357,9 @@ module.exports = {
   $for,
   $var,
 
-  check,
+  error,
+  isError,
+  coerce,
   any,
   aMap,
   aFunction
