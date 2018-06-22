@@ -64,6 +64,8 @@ import ./coll {
   error,
   isError,
   coerce,
+  generate,
+  assert,
   any,
   aMap,
   aFunction
@@ -270,6 +272,9 @@ export {
   error,
   isError,
   coerce,
+  generate,
+  assert,
+  
   any,
   aMap,
   aFunction,

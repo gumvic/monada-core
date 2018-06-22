@@ -182,6 +182,16 @@ function generate(spec) {
   return spec();
 }
 
+function assert(spec, value) {
+  const coerced = coerce(spec, value);
+  if (isError(coerced)) {
+    throw coerced;
+  }
+  else {
+    return coerced;
+  }
+}
+
 // TODO move to core.monada
 function any(x) {
   switch(arguments.length) {
@@ -241,25 +251,9 @@ function aFunctionOf0(res) {
         if (typeof value !== "function") {
           return `${value} is not a function`;
         }
-        function value_() {
-          if (arguments.length !== arity) {
-            throw new TypeError(`Bad arity: ${arguments.length}`);
-          }
-          const res_ = value();
-          const coercedRes = coerce(res, res_);
-          if (isError(coercedRes)) {
-            throw coercedRes;
-          }
-          return res_;
-        }
         const res_ = value();
-        const coercedRes = coerce(res, res_);
-        if (isError(coercedRes)) {
-          throw coercedRes;
-        }
-        else {
-          return value_;
-        }
+        assert(res, res_);
+        return value;
       default:
         throw new TypeError(`Bad arity: ${arguments.length}`);
     }
@@ -287,29 +281,9 @@ function aFunctionOf1(a, res) {
         if (typeof value !== "function") {
           return `${value} is not a function`;
         }
-        function value_(a_) {
-          if (arguments.length !== arity) {
-            throw new TypeError(`Bad arity: ${arguments.length}`);
-          }
-          const coercedA = coerce(a, a_);
-          if (isError(coercedA)) {
-            throw coercedA;
-          }
-          const res_ = value(coercedA);
-          const coercedRes = coerce(res, res_);
-          if (isError(coercedRes)) {
-            throw coercedRes;
-          }
-          return res_;
-        }
-        const res_ = value_(generate(a));
-        const coercedRes = coerce(res, res_);
-        if (isError(coercedRes)) {
-          throw coercedRes;
-        }
-        else {
-          return value_;
-        }
+        const res_ = value(generate(a));
+        assert(res, res_);
+        return value;
       default:
         throw new TypeError(`Bad arity: ${arguments.length}`);
     }
@@ -360,6 +334,8 @@ module.exports = {
   error,
   isError,
   coerce,
+  generate,
+  assert,
   any,
   aMap,
   aFunction
