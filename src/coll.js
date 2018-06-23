@@ -193,18 +193,6 @@ function assert(spec, value) {
 }
 
 // TODO move to core.monada
-function any(x) {
-  switch(arguments.length) {
-    case 0:
-      return undefined;
-    case 1:
-      return x;
-    default:
-      throw new TypeError(`Bad arity: ${arguments.length}`);
-  }
-}
-
-// TODO move to core.monada
 function aMap(map) {
   const m = Immutable.Map().withMutations(m => {
     for(let [k, v] of map) {
@@ -231,70 +219,6 @@ function aMap(map) {
       default:
         throw new TypeError(`Bad arity: ${arguments.length}`);
     }
-  }
-}
-
-function aFunctionOf0(res) {
-  const arity = 0;
-  const res_ = generate(res);
-  function f() {
-    if (arguments.length !== arity) {
-      throw new TypeError(`Bad arity: ${arguments.length}`);
-    }
-    return res_;
-  }
-  return function(value) {
-    switch(arguments.length) {
-      case 0:
-        return f;
-      case 1:
-        if (typeof value !== "function") {
-          return `${value} is not a function`;
-        }
-        const res_ = value();
-        assert(res, res_);
-        return value;
-      default:
-        throw new TypeError(`Bad arity: ${arguments.length}`);
-    }
-  }
-}
-
-function aFunctionOf1(a, res) {
-  const arity = 1;
-  const res_ = generate(res);
-  function f(a_) {
-    if (arguments.length !== arity) {
-      throw new TypeError(`Bad arity: ${arguments.length}`);
-    }
-    const coercedA = coerce(a, a_);
-    if (isError(coercedA)) {
-      throw coercedA;
-    }
-    return res_;
-  }
-  return function(value) {
-    switch(arguments.length) {
-      case 0:
-        return f;
-      case 1:
-        if (typeof value !== "function") {
-          return `${value} is not a function`;
-        }
-        const res_ = value(generate(a));
-        assert(res, res_);
-        return value;
-      default:
-        throw new TypeError(`Bad arity: ${arguments.length}`);
-    }
-  }
-}
-
-function aFunction(a, b) {
-  switch(arguments.length) {
-    case 1: return aFunctionOf0(a);
-    case 2: return aFunctionOf1(a, b);
-    default: throw new TypeError(`Bad arity: ${arguments.length}`);
   }
 }
 
@@ -336,7 +260,5 @@ module.exports = {
   coerce,
   generate,
   assert,
-  any,
-  aMap,
-  aFunction
+  aMap
 };

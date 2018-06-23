@@ -63,12 +63,7 @@ import ./coll {
   var,
   error,
   isError,
-  coerce,
-  generate,
-  assert,
-  any,
-  aMap,
-  aFunction
+  aMap
 }
 
 size { .size, .length } = case
@@ -86,8 +81,6 @@ toJSON x@{ .toJSON } = case
   typeof toJS == "function" -> .toJSON x
   -> _
 end
-
-# TODO -- reduceFor ES Map, Set etc
 
 reduceList () = .asMutable []
 reduceList coll = .asImmutable coll
@@ -187,6 +180,17 @@ indexed r =
 
 f $ g = \x -> f (g x)
 
+maybe f m = case
+  isMonad m -> case
+    f value -> value
+    -> maybe f (next value)
+  where
+    { node, next } = m
+    value = maybe f node
+  end
+  -> m
+end
+
 isPromise { .then } =
   typeof then == "function"
 
@@ -206,6 +210,42 @@ end
 run m = case
   isMonad m -> runMonad m
   -> runPoint m
+end
+
+generate spec = spec()
+
+coerce spec value = spec value
+
+assert spec value = case
+  isError value' -> throw value'
+  -> value'
+where
+  value' = coerce spec value
+end
+
+any () = _
+any x = x
+
+aFunction res = spec where
+  spec () = \() -> generate res
+  spec x = case
+    typeof x == "function" -> maybe isError do
+      coerce res (x ())
+      x
+    end
+    -> error (x + " is not a function")
+  end
+end
+
+aFunction a res = spec where
+  spec () = \a' :: a -> generate res
+  spec x = case
+    typeof x == "function" -> maybe isError do
+      coerce res (x (generate a))
+      x
+    end
+    -> error (x + " is not a function")
+  end
 end
 
 export {
@@ -246,7 +286,9 @@ export {
   record,
   seq,
   Monad,
+  isMonad,
   Done,
+  isDone,
   hasp,
   getp,
   has,
@@ -271,13 +313,13 @@ export {
 
   error,
   isError,
+
   coerce,
   generate,
   assert,
-  
-  any,
-  aMap,
+
   aFunction,
+  aMap,
 
   map,
   filter,
@@ -285,6 +327,7 @@ export {
   take,
   indexed,
 
+  maybe,
   run,
 
   $
