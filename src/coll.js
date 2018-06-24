@@ -162,38 +162,13 @@ function $var(value) {
   }
 }
 
+const error = record("Error", "description");
 function isError(x) {
-  return x instanceof Error;
-}
-
-function error(x) {
-  return new Error(x);
+  return x instanceof error;
 }
 
 // TODO move to core.monada
-function coerce(spec, value) {
-  switch(arguments.length) {
-    case 2: return spec(value);
-    default: throw new TypeError(`Bad arity: ${arguments.length}`);
-  }
-}
-
-function generate(spec) {
-  return spec();
-}
-
-function assert(spec, value) {
-  const coerced = coerce(spec, value);
-  if (isError(coerced)) {
-    throw coerced;
-  }
-  else {
-    return coerced;
-  }
-}
-
-// TODO move to core.monada
-function aMap(map) {
+/*function aMap(map) {
   const m = Immutable.Map().withMutations(m => {
     for(let [k, v] of map) {
       m.set(k, generate(v));
@@ -220,7 +195,31 @@ function aMap(map) {
         throw new TypeError(`Bad arity: ${arguments.length}`);
     }
   }
-}
+}*/
+
+/*function aMap(m) {
+  return function(x) {
+    switch(arguments.length) {
+      case 0:
+      return Immutable.Map().withMutations(m_ => {
+        for(let [k, v] of m) {
+          m_.set(k, generate(v));
+        }
+        return m_;
+      });
+      case 1:
+        for(let [k, spec] of map) {
+          const checked = check(spec, get(value, k));
+          if (isError(checked)) {
+            return error(`{ ${k} -> ${coercedV.message} }`);
+          }
+        }
+        return undefined;
+      default:
+        throw new TypeError(`Bad arity: ${arguments.length}`);
+    }
+  }
+}*/
 
 module.exports = {
   fromJS,
@@ -256,9 +255,5 @@ module.exports = {
   $var,
 
   error,
-  isError,
-  coerce,
-  generate,
-  assert,
-  aMap
+  isError
 };

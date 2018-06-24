@@ -62,8 +62,7 @@ import ./coll {
   for -> for',
   var,
   error,
-  isError,
-  aMap
+  isError
 }
 
 size { .size, .length } = case
@@ -212,15 +211,17 @@ run m = case
   -> runPoint m
 end
 
-generate spec = spec()
+generate spec = spec ()
 
-coerce spec value = spec value
+check spec value = spec value
 
 assert spec value = case
-  isError value' -> throw value'
-  -> value'
+  isError checked -> throw description where
+    { description } = checked
+  end
+  -> value
 where
-  value' = coerce spec value
+  checked = check spec value
 end
 
 any () = _
@@ -229,10 +230,7 @@ any x = x
 aFunction res = spec where
   spec () = \() -> generate res
   spec x = case
-    typeof x == "function" -> maybe isError do
-      coerce res (x ())
-      x
-    end
+    typeof x == "function" -> check res (x ())
     -> error (x + " is not a function")
   end
 end
@@ -240,11 +238,22 @@ end
 aFunction a res = spec where
   spec () = \a' :: a -> generate res
   spec x = case
-    typeof x == "function" -> maybe isError do
-      coerce res (x (generate a))
-      x
-    end
+    typeof x == "function" -> check res (x (generate a))
     -> error (x + " is not a function")
+  end
+end
+
+aMap m = spec where
+  spec () = for m (map \[k, v] -> [k, generate v])
+  spec x = case
+    size errors > 0 -> error errors
+    -> _
+  where
+    errors = for m do
+      map (\[k, v] -> [k, check v (get x k)])
+      filter (\[k, v] -> isError v)
+      map (\[k, { description }] -> [k, description])
+    end
   end
 end
 
@@ -314,7 +323,7 @@ export {
   error,
   isError,
 
-  coerce,
+  check,
   generate,
   assert,
 
