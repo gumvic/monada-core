@@ -1,70 +1,5 @@
 module core
 
-import ./primitives {
-  typeof,
-  instanceof,
-  new,
-  try,
-  throw,
-  invoke,
-  ==,
-  +,
-  -,
-  *,
-  /,
-  %,
-  >,
-  <,
-  >=,
-  <=,
-  ~,
-  |,
-  &,
-  ^,
-  >>,
-  <<,
-  >>>,
-  !,
-  ||,
-  &&
-}
-
-import ./coll {
-  fromJS,
-  fromJSON,
-  List,
-  Map,
-  record,
-  seq,
-  Monad,
-  isMonad,
-  Done,
-  isDone,
-  hasp,
-  getp,
-  has,
-  hasIn,
-  get,
-  getIn,
-  update,
-  updateIn,
-  set,
-  setIn,
-  remove,
-  removeIn,
-  merge,
-  mergeDeep,
-  mergeWith,
-  mergeDeepWith,
-  isList,
-  isMap,
-  isRecord,
-  for -> for',
-  var,
-  error,
-  isError
-}
-
 size { .size, .length } = case
   typeof size == "number" -> size
   typeof length == "number" -> length
@@ -114,7 +49,7 @@ monadToXF m = case
 end
 
 for coll m =
-  for' coll (xf r) where
+  iterate coll (xf r) where
     xf = monadToXF m
     r = reducerFor coll
   end
@@ -156,7 +91,7 @@ take n =
       n' <- v
       v (n' + 1)
       case
-        n' >= n -> Done res
+        n' >= n -> done res
         -> r res x
       end
     end
@@ -177,7 +112,7 @@ indexed r =
     end
   end
 
-f $ g = \x -> f (g x)
+$ f g = \x -> f (g x)
 
 maybe f m = case
   isMonad m -> case
@@ -284,6 +219,7 @@ export {
   !,
   ||,
   &&,
+  var,
 
   fromJS,
   toJS,
@@ -294,10 +230,12 @@ export {
   Map,
   record,
   seq,
-  Monad,
+  monad,
   isMonad,
-  Done,
+  done,
   isDone,
+  error,
+  isError,
   hasp,
   getp,
   has,
@@ -318,10 +256,6 @@ export {
   isMap,
   isRecord,
   for,
-  var,
-
-  error,
-  isError,
 
   check,
   generate,

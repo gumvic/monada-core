@@ -22,6 +22,178 @@ const isRecord = Immutable.Record.isRecord;
 
 // TODO arguments asserts everywhere
 
+function invoke(object, method) {
+  let args = [];
+  for(let i = 2; i < arguments.length; i++) {
+    args.push(arguments[i]);
+  }
+  return object[method].apply(object, args);
+}
+
+function $typeof(x) {
+  return typeof x;
+}
+
+function $instanceof(x, constructor) {
+  return x instanceof constructor;
+}
+
+function $new(constructor) {
+  let args = [];
+  for(let i = 1; i < arguments.length; i++) {
+    args.push(arguments[i]);
+  }
+  // TODO
+}
+
+function $try(f, handler) {
+  if (handler === undefined) {
+    handler = x => x;
+  }
+  if (typeof f !== "function") {
+  	throw new TypeError(`${f} is not a function.`);
+  }
+  if (typeof handler !== "function") {
+  	throw new TypeError(`${handler} is not a function.`);
+  }
+  try {
+    return f();
+  }
+  catch(e) {
+    return handler(e);
+  }
+}
+
+function $throw(e) {
+  // TODO wrap into an Error if not an Error?
+  throw e;
+}
+
+// ==
+const $equals$equals = Immutable.is;
+
+// +
+function $plus(x, y) {
+  switch(arguments.length) {
+    case 0: return 0;
+    case 1: return +x;
+    case 2: return x + y;
+    default: throw new TypeError(`Bad arity: ${arguments.length}`);
+  }
+}
+
+// -
+function $dash(x, y) {
+  switch(arguments.length) {
+    case 0: return 0;
+    case 1: return -x;
+    case 2: return x - y;
+    default: throw new TypeError(`Bad arity: ${arguments.length}`);
+  }
+}
+
+// *
+function $star(x, y) {
+  return x * y;
+}
+
+// /
+function $slash(x, y) {
+  return x / y;
+}
+
+// %
+function $percent(x, y) {
+  return x % y;
+}
+
+// >
+function $right(x, y) {
+  return x > y;
+}
+
+// <
+function $left(x, y) {
+  return x < y;
+}
+
+// >=
+function $right$equals(x, y) {
+  return x >= y;
+}
+
+// <=
+function $left$equals(x, y) {
+  return x <= y;
+}
+
+// ~
+function $tilda(x) {
+  return ~x;
+}
+
+// |
+function $pipe(x, y) {
+  return x | y;
+}
+
+// &
+function $and(x, y) {
+  return x & y;
+}
+
+// ^
+function $caret(x, y) {
+  return x ^ y;
+}
+
+// >>
+function $right$right(x, y) {
+  return x >> y;
+}
+
+// <<
+function $left$left(x, y) {
+  return x << y;
+}
+
+// >>>
+function $right$right$right(x, y) {
+  return x >>> y;
+}
+
+// !
+function $bang(x) {
+  return !x;
+}
+
+// ||
+function $pipe$pipe(x, y) {
+  return x || y;
+}
+
+// &&
+function $and$and(x, y) {
+  return x && y;
+}
+
+/*function $var(value) {
+  return {
+    value: value
+  };
+}*/
+
+// <~
+/*function $left$tilda($var, value) {
+  switch(arguments.length) {
+    case 1: return () => $var.value;
+    case 2: return () => $var.value = value;
+    default: throw new TypeError(`Bad arity: ${arguments.length}`);
+  }
+}*/
+
+// TODO arguments asserts everywhere
+
 function hasp(object, property) {
   return object && object[property] !== undefined;
 }
@@ -90,17 +262,22 @@ function record(name, a, b, c, d, e, f, g, h) {
   }
 }
 
-const Monad = record("Monad", "node", "next");
+const monad = record("Monad", "node", "next");
 function isMonad(x) {
-  return x instanceof Monad;
+  return x instanceof monad;
 }
 
-const Done = record("Done", "value");
+const done = record("Done", "value");
 function isDone(x) {
-  return x instanceof Done;
+  return x instanceof done;
 }
 
-function $for(coll, r) {
+const error = record("Error", "description");
+function isError(x) {
+  return x instanceof error;
+}
+
+function iterate(coll, r) {
   let res = r();
   if (isDone(res)) {
     return r(get(res, "value"));
@@ -162,75 +339,44 @@ function $var(value) {
   }
 }
 
-const error = record("Error", "description");
-function isError(x) {
-  return x instanceof error;
-}
-
-// TODO move to core.monada
-/*function aMap(map) {
-  const m = Immutable.Map().withMutations(m => {
-    for(let [k, v] of map) {
-      m.set(k, generate(v));
-    }
-    return m;
-  });
-  return function(value) {
-    switch(arguments.length) {
-      case 0:
-        return m;
-      case 1:
-        let value_ = Immutable.Map().asMutable();
-        for(let [k, spec] of map) {
-          const coercedV = coerce(spec, get(value, k));
-          if (isError(coercedV)) {
-            return error(`{ ${k} -> ${coercedV.message} }`);
-          }
-          else {
-            value_ = value_.set(k, coercedV);
-          }
-        }
-        return value_.asImmutable();
-      default:
-        throw new TypeError(`Bad arity: ${arguments.length}`);
-    }
-  }
-}*/
-
-/*function aMap(m) {
-  return function(x) {
-    switch(arguments.length) {
-      case 0:
-      return Immutable.Map().withMutations(m_ => {
-        for(let [k, v] of m) {
-          m_.set(k, generate(v));
-        }
-        return m_;
-      });
-      case 1:
-        for(let [k, spec] of map) {
-          const checked = check(spec, get(value, k));
-          if (isError(checked)) {
-            return error(`{ ${k} -> ${coercedV.message} }`);
-          }
-        }
-        return undefined;
-      default:
-        throw new TypeError(`Bad arity: ${arguments.length}`);
-    }
-  }
-}*/
-
 module.exports = {
+  $typeof,
+  $instanceof,
+  $try,
+  $throw,
+  $new,
+  invoke,
+  $equals$equals,
+  $plus,
+  $dash,
+  $star,
+  $slash,
+  $percent,
+  $right,
+  $left,
+  $right$equals,
+  $left$equals,
+  $tilda,
+  $pipe,
+  $and,
+  $caret,
+  $right$right,
+  $left$left,
+  $right$right$right,
+  $bang,
+  $pipe$pipe,
+  $and$and,
+  $var,
+
   fromJS,
   fromJSON,
   List,
   Map,
   record,
   seq,
-  Monad,
+  monad,
   isMonad,
-  Done,
+  done,
   isDone,
   hasp,
   getp,
@@ -251,8 +397,7 @@ module.exports = {
   isList,
   isMap,
   isRecord,
-  $for,
-  $var,
+  iterate,
 
   error,
   isError
