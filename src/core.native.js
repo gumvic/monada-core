@@ -16,6 +16,7 @@ const merge = Immutable.merge;
 const mergeDeep = Immutable.mergeDeep;
 const mergeWith = Immutable.mergeWith;
 const mergeDeepWith = Immutable.mergeDeepWith;
+const isImmutable = Immutable.isImmutable;
 const isList = Immutable.List.isList;
 const isMap = Immutable.Map.isMap;
 const isRecord = Immutable.Record.isRecord;
@@ -391,6 +392,7 @@ module.exports = {
   mergeDeep,
   mergeWith,
   mergeDeepWith,
+  isImmutable,
   isList,
   isMap,
   isRecord,

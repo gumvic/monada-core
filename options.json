@@ -54,6 +54,7 @@
       "mergeDeep",
       "mergeWith",
       "mergeDeepWith",
+      "isImmutable",
       "isList",
       "isMap",
       "isRecord",

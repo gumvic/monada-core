@@ -1,36 +1,31 @@
 module core
 
 import {
-  TypeError
+  TypeError,
+  JSON
 }
 
 size x = case
-  !x -> 0
-  typeof (.size x) == "number" -> .size x
-  typeof (.length x) == "number" -> .length x
+  isImmutable x -> .size x
   -> 0
 end
 
 toJS x = case
-  typeof toJS == "function" -> .toJS x
+  isImmutable x -> .toJS x
   -> x
-where
-  toJS = .toJS x
 end
 
 toJSON x = case
-  typeof toJSON == "function" -> .toJSON x
-  -> _
-where
-  toJSON
+  isImmutable x -> .toJSON x
+  -> .stringify JSON x
 end
 
-reduceList () = .asMutable []
-reduceList coll = .asImmutable coll
+reduceList () = .asMutable [] ()
+reduceList coll = .asImmutable coll ()
 reduceList coll x = .push coll x
 
-reduceMap () = .asMutable {}
-reduceMap coll = .asImmutable coll
+reduceMap () = .asMutable {} ()
+reduceMap coll = .asImmutable coll ()
 reduceMap coll [k, v] = .set coll k v
 
 reduceRecord coll =
@@ -134,8 +129,10 @@ maybe f m = case
   -> m
 end
 
-isPromise { .then } =
-  typeof then == "function"
+isPromise x = case
+  !x -> false
+  -> typeof (.then x) == "function"
+end
 
 runPoint p = case
   typeof p == "function" -> p ()
@@ -258,6 +255,7 @@ export {
   mergeDeep,
   mergeWith,
   mergeDeepWith,
+  isImmutable,
   isList,
   isMap,
   isRecord,
