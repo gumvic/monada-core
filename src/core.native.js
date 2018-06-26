@@ -22,13 +22,13 @@ const isRecord = Immutable.Record.isRecord;
 
 // TODO arguments asserts everywhere
 
-function invoke(object, method) {
+/*function invoke(object, method) {
   let args = [];
   for(let i = 2; i < arguments.length; i++) {
     args.push(arguments[i]);
   }
   return object[method].apply(object, args);
-}
+}*/
 
 function $typeof(x) {
   return typeof x;
@@ -194,7 +194,7 @@ function $and$and(x, y) {
 
 // TODO arguments asserts everywhere
 
-function hasp(object, property) {
+/*function hasp(object, property) {
   return object && object[property] !== undefined;
 }
 
@@ -208,7 +208,7 @@ function invoke(object, method) {
     args.push(arguments[i]);
   }
   return object[method].apply(object, args);
-}
+}*/
 
 const List = Immutable.List;
 
@@ -345,7 +345,6 @@ module.exports = {
   $try,
   $throw,
   $new,
-  invoke,
   $equals$equals,
   $plus,
   $dash,
@@ -378,8 +377,6 @@ module.exports = {
   isMonad,
   done,
   isDone,
-  hasp,
-  getp,
   has,
   hasIn,
   get,

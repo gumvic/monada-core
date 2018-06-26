@@ -1,19 +1,28 @@
 module core
 
-size { .size, .length } = case
-  typeof size == "number" -> size
-  typeof length == "number" -> length
+import {
+  TypeError
+}
+
+size x = case
+  !x -> 0
+  typeof (.size x) == "number" -> .size x
+  typeof (.length x) == "number" -> .length x
   -> 0
 end
 
-toJS x@{ .toJS } = case
+toJS x = case
   typeof toJS == "function" -> .toJS x
   -> x
+where
+  toJS = .toJS x
 end
 
-toJSON x@{ .toJSON } = case
-  typeof toJS == "function" -> .toJSON x
+toJSON x = case
+  typeof toJSON == "function" -> .toJSON x
   -> _
+where
+  toJSON
 end
 
 reduceList () = .asMutable []
@@ -151,7 +160,7 @@ generate spec = spec ()
 check spec value = spec value
 
 assert spec value = case
-  isError checked -> throw description where
+  isError checked -> throw (TypeError description) where
     { description } = checked
   end
   -> value
@@ -198,7 +207,6 @@ export {
   try,
   throw,
   new,
-  invoke,
   ==,
   +,
   -,
@@ -236,8 +244,6 @@ export {
   isDone,
   error,
   isError,
-  hasp,
-  getp,
   has,
   hasIn,
   get,
