@@ -46,8 +46,8 @@ end
 
 monadToXF m = case
   isMonad m -> node $ nextXF where
-    { node, next } = m
-    nextXF = monadToXF (next node)
+    { node, step } = m
+    nextXF = monadToXF (step node)
   end
   -> m
 end
@@ -121,9 +121,9 @@ $ f g = \x -> f (g x)
 maybe f m = case
   isMonad m -> case
     f value -> value
-    -> maybe f (next value)
+    -> maybe f (step value)
   where
-    { node, next } = m
+    { node, step } = m
     value = maybe f node
   end
   -> m
@@ -139,12 +139,12 @@ runPoint p = case
   -> p
 end
 
-runMonad { node, next } = case
-  isPromise value -> .then value runNext
-  -> runNext value
+runMonad { node, step } = case
+  isPromise value -> .then value runStep
+  -> runStep value
 where
   value = run node
-  runNext value = run (next value)
+  runStep value = run (step value)
 end
 
 run m = case

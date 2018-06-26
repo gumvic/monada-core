@@ -263,7 +263,7 @@ function record(name, a, b, c, d, e, f, g, h) {
   }
 }
 
-const monad = record("Monad", "node", "next");
+/*const monad = record("Monad", "node", "next");
 function isMonad(x) {
   return x instanceof monad;
 }
@@ -276,17 +276,60 @@ function isDone(x) {
 const error = record("Error", "description");
 function isError(x) {
   return x instanceof error;
+}*/
+
+const $isError = Symbol("isError");
+function error(description) {
+  return {
+    [$isError]: true,
+    description,
+    toString() {
+      return `Error ${description}`;
+    }
+  };
+}
+function isError(x) {
+  return x && x[$isError];
+}
+
+const $isMonad = Symbol("isMonad");
+function monad(node, step) {
+  return {
+    [$isMonad]: true,
+    node,
+    step,
+    toString() {
+      return `Monad ${node} => ${step}`;
+    }
+  };
+}
+function isMonad(x) {
+  return x && x[$isMonad];
+}
+
+const $isDone = Symbol("isDone");
+function done(value) {
+  return {
+    [$isDone]: true,
+    value,
+    toString() {
+      return `Done ${value}`;
+    }
+  };
+}
+function isDone(x) {
+  return x && x[$isDone];
 }
 
 function iterate(coll, r) {
   let res = r();
   if (isDone(res)) {
-    return r(get(res, "value"));
+    return r(res.value);
   }
   for(let x of coll) {
     res = r(res, x);
     if (isDone(res)) {
-      return r(get(res, "value"));
+      return r(res.value);
     }
   }
   return r(res);
@@ -306,12 +349,12 @@ function monadIterator(monad) {
         const step = steps.pop();
         value = step(value);
         while(isMonad(value)) {
-          steps.push(get(value, "next"));
-          value = get(value, "node");
+          steps.push(value.step);
+          value = value.node;
         }
         if (isDone(value)) {
           steps = [];
-          value = get(value, "value");
+          value = value.value;
         }
         return {
           value
