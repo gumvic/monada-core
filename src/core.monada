@@ -157,27 +157,26 @@ generate spec = spec ()
 check spec value = spec value
 
 assert spec value = case
-  isError checked -> throw (TypeError description) where
-    { description } = checked
-  end
+  isError checked -> throw (TypeError description)
   -> value
 where
-  checked = check spec value
+  checked@{ description } = check spec value
 end
 
-any () = _
-any x = x
+any () = [_]
+any x = _
 
 aFunction res = spec where
-  spec () = \() -> generate res
+  spec () = [\() -> generate res]
   spec x = case
     typeof x == "function" -> check res (x ())
     -> error (x + " is not a function")
   end
 end
 
+# TODO generated function must assert args
 aFunction a res = spec where
-  spec () = \a' :: a -> generate res
+  spec () = [\a' -> generate res]
   spec x = case
     typeof x == "function" -> check res (x (generate a))
     -> error (x + " is not a function")
@@ -185,7 +184,7 @@ aFunction a res = spec where
 end
 
 aMap m = spec where
-  spec () = for m (map \[k, v] -> [k, generate v])
+  spec () = [for m (map \[k, v] -> [k, generate v])]
   spec x = case
     size errors > 0 -> error errors
     -> _
@@ -198,6 +197,17 @@ aMap m = spec where
   end
 end
 
+#{<||> a b = spec where
+  spec () = [...generate a, ...generate b]
+  spec x = case
+    isError a' && isError b' -> TODO
+    -> _
+  where
+    a' = check a x
+    b' = check b x
+  end
+end}
+
 export {
   typeof,
   instanceof,
@@ -205,6 +215,7 @@ export {
   throw,
   new,
   ==,
+  !=,
   +,
   -,
   *,

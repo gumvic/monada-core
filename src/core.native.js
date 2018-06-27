@@ -73,6 +73,10 @@ function $throw(e) {
 // ==
 const $equals$equals = Immutable.is;
 
+function $bang$equals(x, y) {
+  return !Immutable.is(x, y);
+}
+
 // +
 function $plus(x, y) {
   switch(arguments.length) {
@@ -307,6 +311,54 @@ function isMonad(x) {
   return x && x[$isMonad];
 }
 
+/*function monad(step) {
+  function monad(cur, next) {
+    const [_cur, _next] = step(cur);
+    if (_next) {
+      next = cur =>
+    }
+    if (isMonad(cur)) {
+      return cur(undefined, next);
+    }
+    else {
+      return [_cur, next];
+    }
+  }
+  monad[$isMonad] = true;
+  return monad;
+}*/
+
+/*function step(monad, next) {
+  const [cur, _monad] = monad();
+  if (_monad) {
+    return [cur, step(_monad, next)];
+  }
+  else {
+    return [cur, next];
+  }
+}*/
+
+/*function step(monad, next) {
+  const [cur, _next] = monad();
+  if (_next) {
+    next = cur => step(_next(cur), next);
+  }
+  if(isMonad(cur)) {
+    return step(cur, next);
+  }
+  else {
+    return [cur, next];
+  }
+}
+
+function monad_(step) {
+  function monad(cur) {
+    //step
+  }
+  monad[$isMonad] = true;
+  return monad;
+}*/
+
 const $isDone = Symbol("isDone");
 function done(value) {
   return {
@@ -390,6 +442,7 @@ module.exports = {
   $throw,
   $new,
   $equals$equals,
+  $bang$equals,
   $plus,
   $dash,
   $star,
