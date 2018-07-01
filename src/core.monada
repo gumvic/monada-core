@@ -156,6 +156,8 @@ end where
   let checked@{ description } = check spec value
 end
 
+let spec spec = (x -> assert spec x)
+
 let any () = [_]
 let any x = _
 
@@ -271,6 +273,7 @@ export {
   check,
   generate,
   assert,
+  spec,
 
   aFunction,
   aMap,
