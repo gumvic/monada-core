@@ -77,6 +77,20 @@ end
 
 let filter f = (r -> filterXF f r)
 
+#{let findXF f r = r' where
+  let r' () = r ()
+  let r' res = case
+    when f res -> res
+    else _
+  end
+  let r' res x = case
+    when f x -> done x
+    else r res x
+  end
+end
+
+let find f = (r -> findXF f r)}
+
 let reduce r = (_ -> r)
 
 let reduce r coll =
@@ -150,47 +164,52 @@ let generate spec = spec ()
 let check spec value = spec value
 
 let assert spec value = case
-  when isError checked -> throw (TypeError description)
+  when checked -> throw (TypeError checked)
   else value
 end where
-  let checked@{ description } = check spec value
+  let checked = check spec value
 end
-
-let spec spec = (x -> assert spec x)
 
 let any () = [_]
 let any x = _
 
-# TODO
-let aFunction = _
-
-#{aFunction res = spec where
-  spec () = [(() -> generate res)]
-  spec x = case
-    typeof x == "function" -> check res (x ())
-    -> error (x + " is not a function")
+let cartesianProduct list@[first, ...rest] = case
+  when list == [] -> []
+  when rest == [] -> for first (map (first -> [first]))
+  else merge ...products where
+    let rest' = cartesianProduct rest
+    let products = for first
+      (map (first ->
+        for rest' (map (rest -> [first, ...rest]))))
   end
 end
 
-# TODO generated function must assert args
-aFunction a res = spec where
-  spec () = [(a' -> generate res)]
-  spec x = case
-    typeof x == "function" -> check res (x (generate a))
-    -> error (x + " is not a function")
+let aFunction args res = spec where
+  # TODO assert args
+  let spec () = (...args -> generate res)
+  let spec f = case
+    when size errors != 0 -> errors
+    else _
+  end where
+    let args' = cartesianProduct (for args (map generate))
+    let errors = for args' do
+      map (args -> check res (f ...args)),
+      filter (x -> x)
+    end
   end
-end}
+end
+
+let aFunction args restArgs res = _
 
 let aMap m = spec where
   let spec () = [for m (map ([k, v] -> [k, generate v]))]
   let spec x = case
-    when size errors > 0 -> error errors
+    when size errors -> errors
     else _
   end where
     let errors = for m do
       map ([k, v] -> [k, check v (get x k)]),
-      filter ([k, v] -> isError v),
-      map ([k, { description }] -> [k, description])
+      filter ([k, v] -> v)
     end
   end
 end
@@ -205,6 +224,12 @@ end
     b' = check b x
   end
 end}
+
+let spec res =
+  (x -> assert res x)
+
+let spec args res =
+  (x -> assert (aFunction args res) x)
 
 export {
   typeof,
@@ -248,8 +273,6 @@ export {
   isMonad,
   done,
   isDone,
-  error,
-  isError,
   has,
   hasIn,
   get,

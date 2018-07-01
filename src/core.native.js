@@ -282,7 +282,7 @@ function isError(x) {
   return x instanceof error;
 }*/
 
-const $isError = Symbol("isError");
+/*const $isError = Symbol("isError");
 function error(description) {
   return {
     [$isError]: true,
@@ -294,7 +294,7 @@ function error(description) {
 }
 function isError(x) {
   return x && x[$isError];
-}
+}*/
 
 const $isMonad = Symbol("isMonad");
 function monad(node, step) {
@@ -492,8 +492,5 @@ module.exports = {
   isList,
   isMap,
   isRecord,
-  iterate,
-
-  error,
-  isError
+  iterate
 };
