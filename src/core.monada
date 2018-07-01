@@ -5,168 +5,171 @@ import {
   JSON
 }
 
-size x = case
-  isImmutable x -> .size x
-  -> 0
+let size x = case
+  when isImmutable x -> .size x
+  else 0
 end
 
-toJS x = case
-  isImmutable x -> .toJS x
-  -> x
+let toJS x = case
+  when isImmutable x -> .toJS x
+  else x
 end
 
-toJSON x = case
-  isImmutable x -> .toJSON x
-  -> .stringify JSON x
+let toJSON x = case
+  when isImmutable x -> .toJSON x
+  else .stringify JSON x
 end
 
-reduceList () = .asMutable [] ()
-reduceList coll = .asImmutable coll ()
-reduceList coll x = .push coll x
+let reduceList () = .asMutable [] ()
+let reduceList coll = .asImmutable coll ()
+let reduceList coll x = .push coll x
 
-reduceMap () = .asMutable {} ()
-reduceMap coll = .asImmutable coll ()
-reduceMap coll [k, v] = .set coll k v
+let reduceMap () = .asMutable {} ()
+let reduceMap coll = .asImmutable coll ()
+let reduceMap coll [k, v] = .set coll k v
 
-reduceRecord coll =
+let reduceRecord coll =
   r where
-    r () = coll
-    r res = res
-    r res [k, v] = .set coll k v
+    let r () = coll
+    let r res = res
+    let r res [k, v] = .set coll k v
   end
 
-defaultReducer = reduceList
+let defaultReducer = reduceList
 
-reducerFor coll = case
-  isList coll -> reduceList
-  isMap coll -> reduceMap
-  isRecord coll -> reduceRecord coll
-  -> defaultReducer
+let reducerFor coll = case
+  when isList coll -> reduceList
+  when isMap coll -> reduceMap
+  when isRecord coll -> reduceRecord coll
+  else defaultReducer
 end
 
-monadToXF m = case
-  isMonad m -> node $ nextXF where
-    { node, step } = m
-    nextXF = monadToXF (step node)
+let monadToXF m = case
+  when isMonad m -> node $ nextXF where
+    let { node, step } = m
+    let nextXF = monadToXF (step node)
   end
-  -> m
+  else m
 end
 
-for coll m =
+let for coll m =
   iterate coll (xf r) where
-    xf = monadToXF m
-    r = reducerFor coll
+    let xf = monadToXF m
+    let r = reducerFor coll
   end
 
-map f =
+let map f =
   \r -> r' where
-    r' () = r ()
-    r' res = r res
-    r' res x = r res (f x)
+    let r' () = r ()
+    let r' res = r res
+    let r' res x = r res (f x)
   end
 
-map f coll =
+let map f coll =
   for coll (map f)
 
-filter f =
+let filter f =
   \r -> r' where
-    r' () = r ()
-    r' res = r res
-    r' res x = case
-      f x -> r res x
-      -> res
+    let r' () = r ()
+    let r' res = r res
+    let r' res x = case
+      when f x -> r res x
+      else res
     end
   end
 
-filter f coll =
+let filter f coll =
   for coll (filter f)
 
-reduce r = \_ -> r
+let reduce r = \_ -> r
 
-reduce r coll =
+let reduce r coll =
   for coll (reduce r)
 
-take n =
+let take n =
   \r -> r' where
-    v = var 0
-    r' () = r ()
-    r' res = r res
-    r' res x = run do
-      n' <- v
-      v (n' + 1)
+    let v = var 0
+    let r' () = r ()
+    let r' res = r res
+    let r' res x = run do
+      n' <- v,
+      v (n' + 1),
       case
-        n' >= n -> done res
-        -> r res x
+        when n' >= n -> done res
+        else r res x
       end
     end
   end
 
-take n coll =
+let take n coll =
   for coll (take n)
 
-indexed r =
+let indexed r =
   r' where
-    i = var 0
-    r' () = r ()
-    r' res = r res
-    r' res x = run do
-      i' <- i
-      i (i' + 1)
+    let i = var 0
+    let r' () = r ()
+    let r' res = r res
+    let r' res x = run do
+      i' <- i,
+      i (i' + 1),
       r res [x, i']
     end
   end
 
-$ f g = \x -> f (g x)
+let $ f g = \x -> f (g x)
 
-maybe f m = case
-  isMonad m -> case
-    f value -> value
-    -> maybe f (step value)
-  where
-    { node, step } = m
-    value = maybe f node
+let maybe f m = case
+  when isMonad m -> case
+    when f value -> value
+    else maybe f (step value)
+  end where
+    let { node, step } = m
+    let value = maybe f node
   end
-  -> m
+  else m
 end
 
-isPromise x = case
-  !x -> false
-  -> typeof (.then x) == "function"
+let isPromise x = case
+  when !x -> false
+  else typeof (.then x) == "function"
 end
 
-runPoint p = case
-  typeof p == "function" -> p ()
-  -> p
+let runPoint p = case
+  when typeof p == "function" -> p ()
+  else p
 end
 
-runMonad { node, step } = case
-  isPromise value -> .then value runStep
-  -> runStep value
-where
-  value = run node
-  runStep value = run (step value)
+let runMonad { node, step } = case
+  when isPromise value -> .then value runStep
+  else runStep value
+end where
+  let value = run node
+  let runStep value = run (step value)
 end
 
-run m = case
-  isMonad m -> runMonad m
-  -> runPoint m
+let run m = case
+  when isMonad m -> runMonad m
+  else runPoint m
 end
 
-generate spec = spec ()
+let generate spec = spec ()
 
-check spec value = spec value
+let check spec value = spec value
 
-assert spec value = case
-  isError checked -> throw (TypeError description)
-  -> value
-where
-  checked@{ description } = check spec value
+let assert spec value = case
+  when isError checked -> throw (TypeError description)
+  else value
+end where
+  let checked@{ description } = check spec value
 end
 
-any () = [_]
-any x = _
+let any () = [_]
+let any x = _
 
-aFunction res = spec where
+# TODO
+let aFunction = _
+
+#{aFunction res = spec where
   spec () = [\() -> generate res]
   spec x = case
     typeof x == "function" -> check res (x ())
@@ -181,17 +184,17 @@ aFunction a res = spec where
     typeof x == "function" -> check res (x (generate a))
     -> error (x + " is not a function")
   end
-end
+end}
 
-aMap m = spec where
-  spec () = [for m (map \[k, v] -> [k, generate v])]
-  spec x = case
-    size errors > 0 -> error errors
-    -> _
-  where
-    errors = for m do
-      map (\[k, v] -> [k, check v (get x k)])
-      filter (\[k, v] -> isError v)
+let aMap m = spec where
+  let spec () = [for m (map \[k, v] -> [k, generate v])]
+  let spec x = case
+    when size errors > 0 -> error errors
+    else _
+  end where
+    let errors = for m do
+      map (\[k, v] -> [k, check v (get x k)]),
+      filter (\[k, v] -> isError v),
       map (\[k, { description }] -> [k, description])
     end
   end
