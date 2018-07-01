@@ -58,65 +58,58 @@ let for coll m =
     let r = reducerFor coll
   end
 
-let map f =
-  \r -> r' where
-    let r' () = r ()
-    let r' res = r res
-    let r' res x = r res (f x)
+let mapXF f r = r' where
+  let r' () = r ()
+  let r' res = r res
+  let r' res x = r res (f x)
+end
+
+let map f = (r -> mapXF f r)
+
+let filterXF f r = r' where
+  let r' () = r ()
+  let r' res = r res
+  let r' res x = case
+    when f x -> r res x
+    else res
   end
+end
 
-let map f coll =
-  for coll (map f)
+let filter f = (r -> filterXF f r)
 
-let filter f =
-  \r -> r' where
-    let r' () = r ()
-    let r' res = r res
-    let r' res x = case
-      when f x -> r res x
-      else res
-    end
-  end
-
-let filter f coll =
-  for coll (filter f)
-
-let reduce r = \_ -> r
+let reduce r = (_ -> r)
 
 let reduce r coll =
   for coll (reduce r)
 
-let take n =
-  \r -> r' where
-    let v = var 0
-    let r' () = r ()
-    let r' res = r res
-    let r' res x = run do
-      n' <- v,
-      v (n' + 1),
-      case
-        when n' >= n -> done res
-        else r res x
-      end
+let takeXF n r = r' where
+  let v = var 0
+  let r' () = r ()
+  let r' res = r res
+  let r' res x = run do
+    n' <- v,
+    v (n' + 1),
+    case
+      when n' >= n -> done res
+      else r res x
     end
   end
+end
 
-let take n coll =
-  for coll (take n)
+let take n = (r -> takeXF n r)
 
-let indexed r =
-  r' where
-    let i = var 0
-    let r' () = r ()
-    let r' res = r res
-    let r' res x = run do
-      i' <- i,
-      i (i' + 1),
-      r res [x, i']
-    end
+let indexed r = r' where
+  let i = var 0
+  let r' () = r ()
+  let r' res = r res
+  let r' res x = run do
+    i' <- i,
+    i (i' + 1),
+    r res [x, i']
   end
+end
 
-let $ f g = \x -> f (g x)
+let $ f g = (x -> f (g x))
 
 let maybe f m = case
   when isMonad m -> case
@@ -170,7 +163,7 @@ let any x = _
 let aFunction = _
 
 #{aFunction res = spec where
-  spec () = [\() -> generate res]
+  spec () = [(() -> generate res)]
   spec x = case
     typeof x == "function" -> check res (x ())
     -> error (x + " is not a function")
@@ -179,7 +172,7 @@ end
 
 # TODO generated function must assert args
 aFunction a res = spec where
-  spec () = [\a' -> generate res]
+  spec () = [(a' -> generate res)]
   spec x = case
     typeof x == "function" -> check res (x (generate a))
     -> error (x + " is not a function")
@@ -187,15 +180,15 @@ aFunction a res = spec where
 end}
 
 let aMap m = spec where
-  let spec () = [for m (map \[k, v] -> [k, generate v])]
+  let spec () = [for m (map ([k, v] -> [k, generate v]))]
   let spec x = case
     when size errors > 0 -> error errors
     else _
   end where
     let errors = for m do
-      map (\[k, v] -> [k, check v (get x k)]),
-      filter (\[k, v] -> isError v),
-      map (\[k, { description }] -> [k, description])
+      map ([k, v] -> [k, check v (get x k)]),
+      filter ([k, v] -> isError v),
+      map ([k, { description }] -> [k, description])
     end
   end
 end
