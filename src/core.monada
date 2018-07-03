@@ -173,6 +173,40 @@ end
 let any () = [_]
 let any x = _
 
+let aValue value = spec where
+  let spec () = [value]
+  let spec x = case
+    when x != value -> x + " is not " value
+    else _
+  end
+end
+
+let aList l = spec where
+  let spec () = [generate l]
+  let spec x = case
+    when size errors -> errors
+    else -> _
+  end where
+    for x do
+      map (x -> check l x),
+      filter (x -> x)
+    end
+  end
+end
+
+let aMap m = spec where
+  let spec () = [for m (map ([k, v] -> [k, generate v]))]
+  let spec x = case
+    when size errors -> errors
+    else _
+  end where
+    let errors = for m do
+      map ([k, v] -> [k, check v (get x k)]),
+      filter ([k, v] -> v)
+    end
+  end
+end
+
 let cartesianProduct list@[first, ...rest] = case
   when list == [] -> []
   when rest == [] -> for first (map (first -> [first]))
@@ -199,37 +233,22 @@ let aFunction args res = spec where
   end
 end
 
+# TODO
 let aFunction args restArgs res = _
 
-let aMap m = spec where
-  let spec () = [for m (map ([k, v] -> [k, generate v]))]
-  let spec x = case
-    when size errors -> errors
-    else _
-  end where
-    let errors = for m do
-      map ([k, v] -> [k, check v (get x k)]),
-      filter ([k, v] -> v)
-    end
-  end
+<||> a b = spec where
+  spec () = [...(generate a), ...(generate b)]
+  spec x = check a x && check b x
 end
-
-#{<||> a b = spec where
-  spec () = [...generate a, ...generate b]
-  spec x = case
-    isError a' && isError b' -> TODO
-    -> _
-  where
-    a' = check a x
-    b' = check b x
-  end
-end}
 
 let spec res =
   (x -> assert res x)
 
 let spec args res =
   (x -> assert (aFunction args res) x)
+
+let spec args restArgs res =
+  (x -> assert (aFunction args restArgs res) x)
 
 export {
   typeof,
