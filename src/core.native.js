@@ -432,7 +432,7 @@ function iterateMany(colls, r) {
       return r(res);
     }
     else {
-      res = r(res, xs);
+      res = r(res, List(xs));
     }
   }
 }

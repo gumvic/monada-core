@@ -2,8 +2,21 @@ module core
 
 import {
   TypeError,
-  JSON
+  JSON,
+  Math
 }
+
+let isTypeOf type x = typeof x == type
+
+# TODO more of these
+let isBoolean x = isTypeOf "boolean" x
+let isKey x = isTypeOf "string" x
+let isFunction x = isTypeOf "function" x
+
+let isPromise x = case
+  when !x -> false
+  else isFunction (.then x)
+end
 
 let size x = case
   when isImmutable x -> .size x
@@ -113,7 +126,7 @@ let takeWhileXF f r = r' where
     when f x -> r res x
     else done res
   end
-  let r' res = r' res
+  let r' res = r res
 end
 
 let takeWhile f = (r -> takeWhileXF f r)
@@ -145,6 +158,8 @@ let indexed r = r' where
   end
 end
 
+let intoList = (_ -> reduceList)
+
 let $ f g = (x -> f (g x))
 
 #{let maybe f m = case
@@ -158,27 +173,18 @@ let $ f g = (x -> f (g x))
   else m
 end}#
 
-let isPromise x = case
-  when !x -> false
-  else typeof (.then x) == "function"
-end
-
-let runPoint p = case
-  when typeof p == "function" -> p ()
-  else p
-end
-
-let runMonad { node, step } = case
-  when isPromise value -> .then value runStep
-  else runStep value
-end where
-  let value = run node
-  let runStep value = run (step value)
-end
-
-let run m = case
-  when isMonad m -> runMonad m
-  else runPoint m
+let run m@{ node, step } = case
+  when isMonad m -> case
+    when isPromise value -> .then value runStep
+    else runStep value
+  end where
+    let value = run node
+    let runStep value = run (step value)
+  end
+  else case
+    when isFunction m -> m ()
+    else m
+  end
 end
 
 let generate spec = spec ()
@@ -195,10 +201,30 @@ end
 let any () = [_]
 let any x = _
 
+let checkTypeOf type x typeDescription = case
+  when typeof x != type -> x + " is not a " + typeDescription
+  else _
+end
+
+let checkTypeOf type x =
+  checkTypeOf type x type
+
+let aBoolean () = [false, true]
+let aBoolean x = checkTypeOf "boolean" x
+
+let aNumber () = [-(.random Math ()), 0, .random Math ()]
+let aNumber x = checkTypeOf "number" x
+
+let aString () = ["", "some string"]
+let aString x = checkTypeOf "string" x
+
+let aKey () = [:someKey]
+let aKey x = checkTypeOf "string" x "key"
+
 let aValue value = spec where
   let spec () = [value]
   let spec x = case
-    when x != value -> x + " is not " value
+    when x != value -> x + " is not " + value
     else _
   end
 end
@@ -206,25 +232,13 @@ end
 let aList l = spec where
   let spec () = [generate l]
   let spec x = case
+    when !(isList x) -> x + " is not a list"
     when size errors -> errors
     else _
   end where
     let errors = for x do
       map (x -> check l x),
       filter (x -> x)
-    end
-  end
-end
-
-let aMap m = spec where
-  let spec () = [for m (map ([k, v] -> [k, generate v]))]
-  let spec x = case
-    when size errors -> errors
-    else _
-  end where
-    let errors = for m do
-      map ([k, v] -> [k, check v (get x k)]),
-      filter ([k, v] -> v)
     end
   end
 end
@@ -240,9 +254,35 @@ let cartesianProduct list@[first, ...rest] = case
   end
 end
 
+let aMap m = spec where
+  let spec () = for combinations (map generateCombination) where
+    let keys = for m do
+      map ([k, _] -> k),
+      intoList
+    end
+    let combinations = cartesianProduct (for m do
+      map ([_, v] -> generate v),
+      intoList
+    end)
+    let generateCombination values = Map (for keys values (map (x -> x)))
+  end
+  let spec x = case
+    when !(isMap x) -> x + " is not a map"
+    when size errors -> errors
+    else _
+  end where
+    let errors = for m do
+      map ([k, v] -> [k, check v (get x k)]),
+      filter ([k, v] -> v)
+    end
+  end
+end
+
 let aFunction args res = spec where
-  @checks args res
-  let spec () = (...args -> generate res)
+  let spec () = [f] where
+    @checks args res
+    let f ...args = generate res
+  end
   let spec f = case
     when size errors != 0 -> errors
     else _
@@ -255,11 +295,8 @@ let aFunction args res = spec where
   end
 end
 
-# TODO
-let aFunction args restArgs res = _
-
 let oneOf ...specs = spec where
-  let spec () = for specs (map generate)
+  let spec () = merge ...(for specs (map generate))
   let spec x = case
     when size errors == size specs -> errors
     else _
@@ -271,21 +308,11 @@ let oneOf ...specs = spec where
   end
 end
 
-#{let spec res =
-  (x -> assert res x)
-
-let spec args res =
-  (x -> assert (aFunction args res) x)
-
-let spec args restArgs res =
-  (x -> assert (aFunction args restArgs res) x)}#
-
-# TODO rest args
 let checks argSpecs resSpec = (f -> f' where
   let f' ...args = case
     when size args == size argSpecs -> res' where
       let args' = for argSpecs args do
-        map ([spec, arg] -> assert spec arg)
+        map ([argSpec, arg] -> assert argSpec arg)
       end
       let res' = assert resSpec (f ...args')
     end
@@ -360,8 +387,15 @@ export {
   assert,
 
   any,
-  aFunction,
+  aBoolean,
+  aNumber,
+  aKey,
+  aString,
+  aValue,
+  aList,
   aMap,
+  aFunction,
+  oneOf,
 
   checks,
 
