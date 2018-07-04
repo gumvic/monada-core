@@ -58,7 +58,8 @@
       "isMap",
       "isRecord",
       "seq",
-      "iterate"
+      "iterateOne",
+      "iterateMany"
     ]
   }
 }

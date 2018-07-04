@@ -296,6 +296,22 @@ function isError(x) {
   return x && x[$isError];
 }*/
 
+/*
+function Monad(node, step) {
+  this.node = node;
+  this.step = step;
+}
+Monad.prototype.toString = function() {
+  return `Monad ${this.node} => ${this.step}`;
+}
+function monad(node, step) {
+  return new Monad(node, step);
+}
+function isMonad(x) {
+  return x instanceof Monad;
+}
+*/
+
 const $isMonad = Symbol("isMonad");
 function monad(node, step) {
   return {
@@ -373,7 +389,7 @@ function isDone(x) {
   return x && x[$isDone];
 }
 
-function iterate(coll, r) {
+function iterateOne(coll, r) {
   let res = r();
   if (isDone(res)) {
     return r(res.value);
@@ -385,6 +401,40 @@ function iterate(coll, r) {
     }
   }
   return r(res);
+}
+
+function iterateMany(colls, r) {
+  let res = r();
+  if (isDone(res)) {
+    return r(res.value);
+  }
+  let _colls = [];
+  let xs = [];
+  for(let coll of colls) {
+    _colls.push(coll[Symbol.iterator]());
+    xs.push(undefined);
+  }
+  colls = _colls;
+  while(true) {
+    let collsDone = true;
+    for (let i = 0; i < colls.length; i++) {
+      const coll = colls[i];
+      const { done, value } = coll.next();
+      if (!done) {
+        collsDone = false;
+        xs[i] = value;
+      }
+      else {
+        xs[i] = undefined;
+      }
+    }
+    if (collsDone) {
+      return r(res);
+    }
+    else {
+      res = r(res, xs);
+    }
+  }
 }
 
 function monadIterator(monad) {
@@ -492,5 +542,6 @@ module.exports = {
   isList,
   isMap,
   isRecord,
-  iterate
+  iterateOne,
+  iterateMany
 };

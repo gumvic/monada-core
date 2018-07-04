@@ -53,9 +53,17 @@ let monadToXF m = case
 end
 
 let for coll m =
-  iterate coll (xf r) where
+  iterateOne coll (xf r) where
     let xf = monadToXF m
     let r = reducerFor coll
+  end
+
+let for ...args =
+  iterateMany colls (xf r) where
+    let colls = .butLast args ()
+    let m = .last args ()
+    let xf = monadToXF m
+    let r = defaultReducer
   end
 
 let mapXF f r = r' where
@@ -273,9 +281,12 @@ let spec args restArgs res =
 let checks argSpecs resSpec = (f -> f' where
   let f' ...args = case
     when size args == size argSpecs -> res' where
-      let args' = for args do
+      #{let args' = for args do
         indexed,
         map ([arg, i] -> assert (get argSpecs i) arg)
+      end}
+      let args' = for argSpecs args do
+        map ([spec, arg] -> assert spec arg)
       end
       let res' = assert resSpec (f ...args')
     end
