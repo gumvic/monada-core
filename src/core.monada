@@ -97,12 +97,15 @@ let filter f = (r -> filterXF f r)
   end
 end
 
-let find f = (r -> findXF f r)}
+let find f = (r -> findXF f r)}#
 
-let reduce r = (_ -> r)
+let reduceXF f init r = r' where
+  let r' () = init
+  let r' res = res
+  let r' res x = f res x
+end
 
-let reduce r coll =
-  for coll (reduce r)
+let reduce f init = (r -> reduceXF f init r)
 
 let takeWhileXF f r = r' where
   let r' () = r ()
@@ -144,7 +147,7 @@ end
 
 let $ f g = (x -> f (g x))
 
-let maybe f m = case
+#{let maybe f m = case
   when isMonad m -> case
     when f value -> value
     else maybe f (step value)
@@ -153,7 +156,7 @@ let maybe f m = case
     let value = maybe f node
   end
   else m
-end
+end}#
 
 let isPromise x = case
   when !x -> false
@@ -275,16 +278,12 @@ let spec args res =
   (x -> assert (aFunction args res) x)
 
 let spec args restArgs res =
-  (x -> assert (aFunction args restArgs res) x)}
+  (x -> assert (aFunction args restArgs res) x)}#
 
 # TODO rest args
 let checks argSpecs resSpec = (f -> f' where
   let f' ...args = case
     when size args == size argSpecs -> res' where
-      #{let args' = for args do
-        indexed,
-        map ([arg, i] -> assert (get argSpecs i) arg)
-      end}
       let args' = for argSpecs args do
         map ([spec, arg] -> assert spec arg)
       end
@@ -372,7 +371,6 @@ export {
   take,
   indexed,
 
-  maybe,
   run,
 
   $
