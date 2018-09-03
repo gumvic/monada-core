@@ -3,13 +3,7 @@ const native = require("./src/native");
 const data = require("./src/data");
 
 module.exports = {
-  $monada: {
-    exports: {
-      ...types.$monada.exports,
-      ...native.$monada.exports,
-      ...data.$monada.exports
-    }
-  },
+  $monada: true,
   ...types,
   ...native,
   ...data

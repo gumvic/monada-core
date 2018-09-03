@@ -1,5 +1,10 @@
 const immutable = require("Immutable");
-const { matchType, tNone, tAny, tFromValue, tFunction } = require("./types");
+const {
+  matchType: { value: matchType },
+  tNone: { value: tNone },
+  tAny: { value: tAny },
+  tFromValue: { value: tFromValue },
+  tFunction: { value: tFunction } } = require("./types");
 
 const fromJS = immutable.fromJS;
 const fromJSON = immutable.fromJSON;
@@ -35,31 +40,27 @@ function map(coll) {
 }
 
 module.exports = {
-  $monada: {
-    exports: {
-      "==": {
-        type: tFunction(tAny, tAny, (a, b) => {
-          const match = matchType(a, b);
-          if (match === 1) {
-            return tFromValue(true);
-          }
-          else if (match === -1) {
-            return tFromValue(false);
-          }
-          else {
-            return tBoolean;
-          }
-        })
-      },
-      list: {
-        type: tNone
-      },
-      map: {
-        type: tNone
+  "==": {
+    type: tFunction(tAny, tAny, (a, b) => {
+      const match = matchType(a, b);
+      if (match === 1) {
+        return tFromValue(true);
       }
-    }
+      else if (match === -1) {
+        return tFromValue(false);
+      }
+      else {
+        return tBoolean;
+      }
+    }),
+    value: $equals$equals
   },
-  $equals$equals,
-  list,
-  map
+  list: {
+    type: tNone,
+    value: list
+  },
+  map: {
+    type: tNone,
+    value: map
+  }
 };

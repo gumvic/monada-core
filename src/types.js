@@ -250,72 +250,72 @@ const tNumber = tPrimitive("number");
 const tString = tPrimitive("string");
 
 module.exports = {
-  $monada: {
-    exports: {
-      castType: {
-        type: tNone
-      },
-      readableType: {
-        type: tNone
-      },
-      tNone: {
-        type: tNone
-      },
-      tAny: {
-        type: tNone
-      },
-      tPrimitive: {
-        type: tNone
-      },
-      tFromValue: {
-        type: tNone
-      },
-      tFunction: {
-        type: tNone
-      },
-      tMultiFunction: {
-        type: tNone
-      },
-      tOr: {
-        type: tNone
-      },
-      tAnd: {
-        type: tNone
-      },
-      tNot: {
-        type: tNone
-      },
-      tUndefined: {
-        type: tNone
-      },
-      tNull: {
-        type: tNone
-      },
-      tBoolean: {
-        type: tNone
-      },
-      tNumber: {
-        type: tNone
-      },
-      tString: {
-        type: tNone
-      }
-    }
+  matchType: {
+    type: tNone,
+    value: matchType
   },
-  castType,
-  readableType,
-  tNone,
-  tAny,
-  tPrimitive,
-  tFromValue,
-  tFunction,
-  tMultiFunction,
-  tOr,
-  tAnd,
-  tNot,
-  tUndefined,
-  tNull,
-  tBoolean,
-  tNumber,
-  tString
+  castType: {
+    type: tNone,
+    value: castType
+  },
+  readableType: {
+    type: tNone,
+    value: readableType
+  },
+  tNone: {
+    type: tNone,
+    value: tNone
+  },
+  tAny: {
+    type: tNone,
+    value: tAny
+  },
+  tPrimitive: {
+    type: tNone,
+    value: tPrimitive
+  },
+  tFromValue: {
+    type: tNone,
+    value: tFromValue
+  },
+  tFunction: {
+    type: tNone,
+    value: tFunction
+  },
+  tMultiFunction: {
+    type: tNone,
+    value: tMultiFunction
+  },
+  tOr: {
+    type: tNone,
+    value: tOr
+  },
+  tAnd: {
+    type: tNone,
+    value: tAnd
+  },
+  tNot: {
+    type: tNone,
+    value: tNot
+  },
+  tUndefined: {
+    type: tNone,
+    value: tUndefined
+  },
+  tNull: {
+    type: tNone,
+    value: tNull
+  },
+  tBoolean: {
+    type: tNone,
+    value: tBoolean
+  },
+  tNumber: {
+    type: tNone,
+    value: tNumber
+  },
+  tString: {
+    type: tNone,
+    value: tString
+  }
 };

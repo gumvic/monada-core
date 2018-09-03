@@ -1,4 +1,8 @@
-const { tNumber, tString, tFunction, tMultiFunction } = require("./types");
+const {
+  tNumber: { value: tNumber },
+  tString: { value: tString },
+  tFunction: { value: tFunction },
+  tMultiFunction: { value: tMultiFunction } } = require("./types");
 
 function $typeof(x) {
   return typeof x;
@@ -145,16 +149,12 @@ function $and$and(x, y) {
 }
 
 module.exports = {
-  $monada: {
-    exports: {
-      "+": {
-        type: tMultiFunction(
-          tFunction(tNumber, tNumber, ({ value: a }, { value: b }) =>
-            a !== undefined && b != undefined ? tFromValue(a + b) : tNumber),
-          tFunction(tString, tString, ({ value: a }, { value: b }) =>
-            a !== undefined && b != undefined ? tFromValue(a + b) : tString))
-      }
-    }
-  },
-  $plus
+  "+": {
+    type: tMultiFunction(
+      tFunction(tNumber, tNumber, ({ value: a }, { value: b }) =>
+        a !== undefined && b != undefined ? tFromValue(a + b) : tNumber),
+      tFunction(tString, tString, ({ value: a }, { value: b }) =>
+        a !== undefined && b != undefined ? tFromValue(a + b) : tString)),
+    value: $plus
+  }
 };
