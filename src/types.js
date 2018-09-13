@@ -1,9 +1,5 @@
-function castType(to, from) {
+function cast(to, from) {
   return to.castFrom(from) || from.castTo(to);
-}
-
-function readableType({ readable }) {
-  return readable;
 }
 
 function matchType({ type: aType, value: aValue }, { type: bType, value: bValue }) {
@@ -31,7 +27,9 @@ const tNone = {
   castTo(_) {
     return true;
   },
-  readable: "?"
+  toString() {
+    return "?";
+  }
 };
 
 const tAny = {
@@ -42,7 +40,9 @@ const tAny = {
   castTo({ type: toType }) {
     return toType === "any";
   },
-  readable: "*"
+  toString() {
+    return "*";
+  }
 };
 
 function tPrimitive(type, value) {
@@ -59,7 +59,9 @@ function tPrimitive(type, value) {
         (type === toType) &&
         (value === undefined || value === toValue));
     },
-    readable: value === undefined ? type : `${type}(${value})`
+    toString() {
+      return value === undefined ? type : `${type}(${value})`;
+    }
   };
 }
 
@@ -81,7 +83,7 @@ function checkFunctionArgs(args, _args) {
   }
   else {
     for (let i = 0; i < _args.length; i++) {
-      if (!castType(args[i], _args[i])) {
+      if (!cast(args[i], _args[i])) {
         return false;
       }
     }
@@ -90,8 +92,6 @@ function checkFunctionArgs(args, _args) {
 }
 
 function staticFunction(args, res) {
-  const readableArgs = args.map(readableType);
-  const readableRes = readableType(res);
   return {
     type: "function",
     fn(..._args) {
@@ -101,7 +101,7 @@ function staticFunction(args, res) {
       if (fromType === "function") {
         const toRes = res;
         const fromRes = fromFn(...args);
-        return fromRes && castType(toRes, fromRes);
+        return fromRes && cast(toRes, fromRes);
       }
       else {
         return false;
@@ -111,13 +111,13 @@ function staticFunction(args, res) {
       // TODO
       return false;
     },
-    readable: `fn(${readableArgs.join(", ")}) -> ${readableRes}`
+    toString() {
+      return `fn(${args.map((t) => t.toString()).join(", ")}) -> ${res}`
+    }
   };
 }
 
 function dynamicFunction(args, resFn) {
-  const readableArgs = args.map(readableType);
-  const readableRes = "?";
   return {
     type: "function",
     fn(..._args) {
@@ -127,7 +127,7 @@ function dynamicFunction(args, resFn) {
       if (fromType === "function") {
         const toRes = resFn(...args);
         const fromRes = fromFn(...args);
-        return toRes && fromRes && castType(res, fromRes);
+        return toRes && fromRes && cast(res, fromRes);
       }
       else {
         return false;
@@ -137,7 +137,9 @@ function dynamicFunction(args, resFn) {
       // TODO
       return false;
     },
-    readable: `fn(${readableArgs.join(", ")}) -> ${readableRes}`
+    toString() {
+      return `fn(${args.map((t) => t.toString()).join(", ")}) -> ...`
+    }
   };
 }
 
@@ -152,7 +154,6 @@ function tFunction(...args) {
 };
 
 function tMultiFunction(...functions) {
-  const readableFunctions = functions.map(readableType);
   return {
     type: "function",
     fn(...args) {
@@ -176,18 +177,19 @@ function tMultiFunction(...functions) {
       // TODO
       return false;
     },
-    readable: `fns(${readableFunctions.join(", ")})`
+    toString() {
+      return `fns(${functions.map((t) => t.toString()).join(" & ")})`;
+    }
   };
 }
 
 function tOr(...types) {
-  const readableTypes = types.map(readableType);
   return {
     type: "or",
     types,
     castFrom(from) {
       for(let to of types) {
-        if (castType(to, from)) {
+        if (cast(to, from)) {
           return true;
         }
       }
@@ -195,24 +197,25 @@ function tOr(...types) {
     },
     castTo(to) {
       for(let from of types) {
-        if (!castType(to, from)) {
+        if (!cast(to, from)) {
           return false;
         }
       }
       return true;
     },
-    readable: `(${readableTypes.join(" | ")})`
+    toString() {
+      return `(${types.map((t) => t.toString()).join(" | ")})`;
+    }
   };
 }
 
 function tAnd(...types) {
-  const readableTypes = types.map(readableType);
   return {
     type: "and",
     types,
     castFrom(from) {
       for(let to of types) {
-        if (!castType(to, from)) {
+        if (!cast(to, from)) {
           return false;
         }
       }
@@ -220,13 +223,15 @@ function tAnd(...types) {
     },
     castTo(to) {
       for(let from of types) {
-        if (castType(to, from)) {
+        if (cast(to, from)) {
           return true;
         }
       }
       return false;
     },
-    readable: `(${readableTypes.join(" & ")})`
+    toString() {
+      return `(${types.map((t) => t.toString()).join(" & ")})`;
+    }
   };
 }
 
@@ -239,7 +244,9 @@ function tNot(type) {
     castTo(to) {
       return !cast(to, type);
     },
-    readable: `!${readableType(type)}`
+    toString() {
+      return `!${type}`;
+    }
   };
 }
 
@@ -254,13 +261,9 @@ module.exports = {
     type: tNone,
     value: matchType
   },
-  castType: {
+  cast: {
     type: tNone,
-    value: castType
-  },
-  readableType: {
-    type: tNone,
-    value: readableType
+    value: cast
   },
   tNone: {
     type: tNone,

@@ -1,6 +1,7 @@
 const {
   tNumber: { value: tNumber },
   tString: { value: tString },
+  tFromValue: { value: tFromValue },
   tFunction: { value: tFunction },
   tMultiFunction: { value: tMultiFunction } } = require("./types");
 
