@@ -2,6 +2,7 @@ const immutable = require("Immutable");
 const {
   tNone: { value: tNone },
   tAny: { value: tAny },
+  tBoolean: { value: tBoolean },
   tFromValue: { value: tFromValue },
   tFunction: { value: tFunction } } = require("./types");
 

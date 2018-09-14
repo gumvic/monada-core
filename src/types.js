@@ -1,5 +1,44 @@
+const cartesian = require("cartesian");
+
 function cast(to, from) {
   return to.castFrom(from) || from.castTo(to);
+}
+
+function typeCombinations(type) {
+  if (type.type === "or") {
+    return type.types;
+  }
+  else {
+    return [type];
+  }
+}
+
+function _apply([{ type, fn }, ...args]) {
+  if (type !== "function") {
+    return undefined;
+  }
+  else {
+    return fn(...args);
+  }
+}
+
+function apply(fn, args) {
+  const applicationCombinations = cartesian([
+    typeCombinations(fn),
+    ...args.map(typeCombinations)
+  ]);
+  if (applicationCombinations.length === 1) {
+    return _apply(applicationCombinations[0]);
+  }
+  else {
+    const results = applicationCombinations.map(_apply);
+    if (results.filter((r) => !r).length) {
+      return undefined;
+    }
+    else {
+      return tOr(...results);
+    }
+  }
 }
 
 const tNone = {
@@ -243,6 +282,10 @@ module.exports = {
   cast: {
     type: tNone,
     value: cast
+  },
+  apply: {
+    type: tNone,
+    value: apply
   },
   tNone: {
     type: tNone,
