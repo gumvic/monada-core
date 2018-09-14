@@ -1,6 +1,5 @@
 const immutable = require("Immutable");
 const {
-  matchType: { value: matchType },
   tNone: { value: tNone },
   tAny: { value: tAny },
   tFromValue: { value: tFromValue },
@@ -41,12 +40,16 @@ function map(coll) {
 
 module.exports = {
   "==": {
-    type: tFunction(tAny, tAny, (a, b) => {
-      const match = matchType(a, b);
-      if (match === 1) {
+    type: tFunction(tAny, tAny, ({ type: aType, value: aValue }, { type: bType, value: bValue }) => {
+      if (
+        aType === bType &&
+        aValue !== undefined && bValue !== undefined &&
+        aValue === bValue) {
         return tFromValue(true);
       }
-      else if (match === -1) {
+      else if (
+        aType !== bType ||
+        aValue !== bValue) {
         return tFromValue(false);
       }
       else {

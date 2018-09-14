@@ -2,23 +2,6 @@ function cast(to, from) {
   return to.castFrom(from) || from.castTo(to);
 }
 
-function matchType({ type: aType, value: aValue }, { type: bType, value: bValue }) {
-  if (
-    aType === bType &&
-    aValue !== undefined && bValue !== undefined &&
-    aValue === bValue) {
-    return 1;
-  }
-  else if (
-    aType !== bType ||
-    aValue !== bValue) {
-    return -1;
-  }
-  else {
-    return 0;
-  }
-}
-
 const tNone = {
   type: "none",
   castFrom(_) {
@@ -257,10 +240,6 @@ const tNumber = tPrimitive("number");
 const tString = tPrimitive("string");
 
 module.exports = {
-  matchType: {
-    type: tNone,
-    value: matchType
-  },
   cast: {
     type: tNone,
     value: cast
