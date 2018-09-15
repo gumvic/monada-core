@@ -77,6 +77,7 @@ function checkFunctionArgs(args, _args) {
 function staticFunction(args, res) {
   return {
     type: "function",
+    args,
     fn(..._args) {
       return checkFunctionArgs(args, _args) && res;
     },
@@ -103,6 +104,7 @@ function staticFunction(args, res) {
 function dynamicFunction(args, resFn) {
   return {
     type: "function",
+    args,
     fn(..._args) {
       return checkFunctionArgs(args, _args) && resFn(..._args);
     },
