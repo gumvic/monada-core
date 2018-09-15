@@ -1,250 +1,243 @@
+const NONE = "none";
+const ANY = "any";
+const UNDEFINED = "undefined";
+const NULL = "null";
+const BOOLEAN = "boolean";
+const NUMBER = "number";
+const STRING = "string";
+const FUNCTION = "function";
+const AND = "and";
+const OR = "or";
+
 function cast(to, from) {
-  return to.castFrom(from) || from.castTo(to);
+  if (to.type === NONE ||
+      from.type === NONE) {
+    return true;
+  }
+  else if (to.type === ANY) {
+    return true;
+  }
+  else if (to.type === AND) {
+    for (let _to of to.types) {
+      if (!cast(_to, from)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  else if (from.type === AND) {
+    for (let _from of from.types) {
+      if (cast(to, _from)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  else if (to.type === OR) {
+    for (let _to of to.types) {
+      if (cast(_to, from)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  else if (from.type === OR) {
+    for (let _from of from.types) {
+      if (!cast(to, _from)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  else if (
+    to.type === UNDEFINED &&
+    from.type === UNDEFINED) {
+    return true;
+  }
+  else if (
+    to.type === NULL &&
+    from.type === NULL) {
+    return true;
+  }
+  else if (
+    to.type === BOOLEAN ||
+    to.type === NUMBER ||
+    to.type === STRING) {
+    return to.value === undefined ?
+      to.type === from.type :
+      (to.type === from.type && to.value === from.value);
+  }
+  else if (
+    to.type === FUNCTION &&
+    from.type === FUNCTION) {
+    const fromRes = from.fn(...to.args);
+    const toRes = to.res;
+    return fromRes && cast(toRes, fromRes);
+  }
+  else {
+    return false;
+  }
+}
+
+function match(type, value) {
+  // TODO
+}
+
+function readable(type) {
+  switch(type.type) {
+    case NONE: return "_";
+    case ANY: return "*";
+    case UNDEFINED: return "undefined";
+    case NULL: return "null";
+    case BOOLEAN: return type.value ? `boolean(${type.value})` : `boolean`;
+    case NUMBER: return type.value ? `number(${type.value})` : `number`;
+    case STRING: return type.value ? `string(${type.value})` : `string`;
+    case FUNCTION: return type.readable || `fn(${type.args.map(readable).join(", ")}) -> ${readable(type.res)}`;
+    case AND: return `(${type.types.map(readable).join(" & ")})`;
+    case OR: return `(${type.types.map(readable).join(" | ")})`;
+    default: return "";
+  }
 }
 
 const tNone = {
-  type: "none",
-  castFrom(_) {
-    return true;
-  },
-  castTo(_) {
-    return true;
-  },
-  toString() {
-    return "?";
-  }
+  type: NONE
 };
 
 const tAny = {
-  type: "any",
-  castFrom(_) {
-    return true;
-  },
-  castTo({ type: toType }) {
-    return toType === "any";
-  },
-  toString() {
-    return "*";
-  }
+  type: ANY
 };
 
-function tPrimitive(type, value) {
-  return {
-    type,
-    value,
-    castFrom({ type: fromType, value: fromValue }) {
-      return (
-        (type === fromType) &&
-        (value === undefined || value === fromValue));
-    },
-    castTo({ type: toType, value: toValue }) {
-      return (
-        (type === toType) &&
-        (value === undefined || value === toValue));
-    },
-    toString() {
-      return value === undefined ? type : `${type}(${value})`;
-    }
-  };
-}
-
-function tFromValue(value) {
-  if (value === null) {
-    return tNull;
-  }
-  else if (typeof value !== "object") {
-    return tPrimitive(typeof value, value);
-  }
-  else {
-    return tAny;
-  }
-}
-
-function checkFunctionArgs(args, _args) {
-  if (_args.length !== args.length) {
-    return false;
-  }
-  else {
-    for (let i = 0; i < _args.length; i++) {
-      if (!cast(args[i], _args[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-}
-
-function staticFunction(args, res) {
-  return {
-    type: "function",
-    args,
-    fn(..._args) {
-      return checkFunctionArgs(args, _args) && res;
-    },
-    castFrom({ type: fromType, fn: fromFn }) {
-      if (fromType === "function") {
-        const toRes = res;
-        const fromRes = fromFn(...args);
-        return fromRes && cast(toRes, fromRes);
-      }
-      else {
-        return false;
-      }
-    },
-    castTo(to) {
-      // TODO
-      return false;
-    },
-    toString() {
-      return `fn(${args.map((t) => t.toString()).join(", ")}) -> ${res}`
-    }
-  };
-}
-
-function dynamicFunction(args, resFn) {
-  return {
-    type: "function",
-    args,
-    fn(..._args) {
-      return checkFunctionArgs(args, _args) && resFn(..._args);
-    },
-    castFrom({ type: fromType, fn: fromFn }) {
-      if (fromType === "function") {
-        const toRes = resFn(...args);
-        const fromRes = fromFn(...args);
-        return toRes && fromRes && cast(res, fromRes);
-      }
-      else {
-        return false;
-      }
-    },
-    castTo(to) {
-      // TODO
-      return false;
-    },
-    toString() {
-      return `fn(${args.map((t) => t.toString()).join(", ")}) -> ...`
-    }
-  };
-}
-
-function tFunction(...args) {
-  const res = args.pop();
-  if (typeof res === "function") {
-    return dynamicFunction(args, res);
-  }
-  else {
-    return staticFunction(args, res);
-  }
+const tUndefined = {
+  type: UNDEFINED
 };
 
-function tMultiFunction(...functions) {
+const tNull = {
+  type: NULL
+};
+
+function tBoolean(value) {
   return {
-    type: "function",
-    fn(...args) {
-      for(let { fn } of functions) {
-        const res = fn(...args);
-        if (res) {
-          return res;
-        }
-      }
-      return false;
-    },
-    castFrom(from) {
-      for(let to of functions) {
-        if(!cast(to, from)) {
-          return false;
-        }
-      }
-      return false;
-    },
-    castTo(to) {
-      // TODO
-      return false;
-    },
-    toString() {
-      return `fns(${functions.map((t) => t.toString()).join(" & ")})`;
-    }
+    type: BOOLEAN,
+    value
   };
 }
+tBoolean.type = BOOLEAN;
 
-function tOr(...types) {
+function tNumber(value) {
   return {
-    type: "or",
-    types,
-    castFrom(from) {
-      for(let to of types) {
-        if (cast(to, from)) {
-          return true;
-        }
-      }
+    type: NUMBER,
+    value
+  };
+}
+tNumber.type = NUMBER;
+
+function tString(value) {
+  return {
+    type: STRING,
+    value
+  };
+}
+tString.type = STRING;
+
+function tFunction(args, res, fn, readable) {
+  function checkArgs(..._args) {
+    if (_args.length !== args.length) {
       return false;
-    },
-    castTo(to) {
-      for(let from of types) {
-        if (!cast(to, from)) {
+    }
+    else {
+      for (let i = 0; i < _args.length; i++) {
+        if (!cast(args[i], _args[i])) {
           return false;
         }
       }
       return true;
-    },
-    toString() {
-      return `(${types.map((t) => t.toString()).join(" | ")})`;
     }
+  }
+  return {
+    type: FUNCTION,
+    args,
+    res,
+    fn(...args) {
+      if (!checkArgs(...args)) {
+        return undefined;
+      }
+      else if (fn) {
+        return fn(...args);
+      }
+      else {
+        return res;
+      }
+    },
+    readable
   };
 }
 
 function tAnd(...types) {
   return {
-    type: "and",
-    types,
-    castFrom(from) {
-      for(let to of types) {
-        if (!cast(to, from)) {
-          return false;
-        }
-      }
-      return true;
-    },
-    castTo(to) {
-      for(let from of types) {
-        if (cast(to, from)) {
-          return true;
-        }
-      }
-      return false;
-    },
-    toString() {
-      return `(${types.map((t) => t.toString()).join(" & ")})`;
-    }
+    type: AND,
+    types
   };
 }
 
-function tNot(type) {
+function tOr(...types) {
   return {
-    type: "not",
-    castFrom(from) {
-      return !cast(type, from);
-    },
-    castTo(to) {
-      return !cast(to, type);
-    },
-    toString() {
-      return `!${type}`;
-    }
+    type: OR,
+    types
   };
 }
-
-const tUndefined = tPrimitive("undefined");
-const tNull = tPrimitive("null");
-const tBoolean = tPrimitive("boolean");
-const tNumber = tPrimitive("number");
-const tString = tPrimitive("string");
 
 module.exports = {
   cast: {
     type: tNone,
     value: cast
+  },
+  match: {
+    type: tNone,
+    value: match
+  },
+  readable: {
+    type: tNone,
+    value: readable
+  },
+  NONE: {
+    type: tString,
+    value: NONE
+  },
+  ANY: {
+    type: tString,
+    value: ANY
+  },
+  UNDEFINED: {
+    type: tString,
+    value: UNDEFINED
+  },
+  NULL: {
+    type: tString,
+    value: NULL
+  },
+  BOOLEAN: {
+    type: tString,
+    value: BOOLEAN
+  },
+  NUMBER: {
+    type: tString,
+    value: NUMBER
+  },
+  STRING: {
+    type: tString,
+    value: STRING
+  },
+  FUNCTION: {
+    type: tString,
+    value: FUNCTION
+  },
+  AND: {
+    type: tString,
+    value: AND
+  },
+  OR: {
+    type: tString,
+    value: OR
   },
   tNone: {
     type: tNone,
@@ -253,34 +246,6 @@ module.exports = {
   tAny: {
     type: tNone,
     value: tAny
-  },
-  tPrimitive: {
-    type: tNone,
-    value: tPrimitive
-  },
-  tFromValue: {
-    type: tNone,
-    value: tFromValue
-  },
-  tFunction: {
-    type: tNone,
-    value: tFunction
-  },
-  tMultiFunction: {
-    type: tNone,
-    value: tMultiFunction
-  },
-  tOr: {
-    type: tNone,
-    value: tOr
-  },
-  tAnd: {
-    type: tNone,
-    value: tAnd
-  },
-  tNot: {
-    type: tNone,
-    value: tNot
   },
   tUndefined: {
     type: tNone,
@@ -301,5 +266,17 @@ module.exports = {
   tString: {
     type: tNone,
     value: tString
+  },
+  tFunction: {
+    type: tNone,
+    value: tFunction
+  },
+  tAnd: {
+    type: tNone,
+    value: tAnd
+  },
+  tOr: {
+    type: tNone,
+    value: tOr
   }
 };

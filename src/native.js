@@ -1,9 +1,8 @@
 const {
   tNumber: { value: tNumber },
   tString: { value: tString },
-  tFromValue: { value: tFromValue },
   tFunction: { value: tFunction },
-  tMultiFunction: { value: tMultiFunction } } = require("./types");
+  tAnd: { value: tAnd } } = require("./types");
 
 function $typeof(x) {
   return typeof x;
@@ -151,11 +150,11 @@ function $and$and(x, y) {
 
 module.exports = {
   "+": {
-    type: tMultiFunction(
-      tFunction(tNumber, tNumber, ({ value: a }, { value: b }) =>
-        a !== undefined && b != undefined ? tFromValue(a + b) : tNumber),
-      tFunction(tString, tString, ({ value: a }, { value: b }) =>
-        a !== undefined && b != undefined ? tFromValue(a + b) : tString)),
+    type: tAnd(
+      tFunction([tNumber, tNumber], tNumber, ({ value: a }, { value: b }) =>
+        a !== undefined && b != undefined ? tNumber(a + b) : tNumber),
+      tFunction([tString, tString], tString, ({ value: a }, { value: b }) =>
+        a !== undefined && b != undefined ? tString(a + b) : tString)),
     value: $plus
   }
 };

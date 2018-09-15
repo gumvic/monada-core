@@ -3,7 +3,8 @@ const {
   tNone: { value: tNone },
   tAny: { value: tAny },
   tBoolean: { value: tBoolean },
-  tFromValue: { value: tFromValue },
+  tNumber: { value: tNumber },
+  tString: { value: tString },
   tFunction: { value: tFunction } } = require("./types");
 
 const fromJS = immutable.fromJS;
@@ -41,17 +42,17 @@ function map(coll) {
 
 module.exports = {
   "==": {
-    type: tFunction(tAny, tAny, ({ type: aType, value: aValue }, { type: bType, value: bValue }) => {
+    type: tFunction(tAny, tAny, tBoolean, ({ type: aType, value: aValue }, { type: bType, value: bValue }) => {
       if (
         aType === bType &&
         aValue !== undefined && bValue !== undefined &&
         aValue === bValue) {
-        return tFromValue(true);
+        return tBoolean(true);
       }
       else if (
         aType !== bType ||
         aValue !== bValue) {
-        return tFromValue(false);
+        return tBoolean(false);
       }
       else {
         return tBoolean;
