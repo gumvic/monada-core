@@ -70,9 +70,19 @@ function cast(to, from) {
   else if (
     to.type === FUNCTION &&
     from.type === FUNCTION) {
-    const fromRes = from.fn(...to.args);
-    const toRes = to.res;
-    return fromRes && cast(toRes, fromRes);
+    for(let { args: toArgs, res: toRes } of to.variants) {
+      let success = false;
+      for(let { fn: fromFn } of from.variants) {
+        const fromRes = fromFn(...toArgs);
+        if (fromRes && cast(toRes, fromRes)) {
+          success = true;
+          break;
+        }
+      }
+      if (!success) {
+        return false;
+      }
+    }
   }
   else {
     return false;
@@ -92,7 +102,14 @@ function readable(type) {
     case BOOLEAN: return type.value ? `boolean(${type.value})` : `boolean`;
     case NUMBER: return type.value ? `number(${type.value})` : `number`;
     case STRING: return type.value ? `string(${type.value})` : `string`;
-    case FUNCTION: return type.readable || `fn(${type.args.map(readable).join(", ")}) -> ${readable(type.res)}`;
+    case FUNCTION:
+      const variants = type.variants
+        .map(({ readable: _readable, args, res }) =>
+          _readable ||
+          `fn(${args.map(readable).join(", ")}) -> ${readable(res)}`);
+      return variants.length === 1 ?
+        variants[0] :
+        `(${variants.join(", ")})`;
     case AND: return `(${type.types.map(readable).join(" & ")})`;
     case OR: return `(${type.types.map(readable).join(" | ")})`;
     default: return "";
@@ -139,36 +156,31 @@ function tString(value) {
 }
 tString.type = STRING;
 
-function tFunction(args, res, fn, readable) {
-  function checkArgs(..._args) {
-    if (_args.length !== args.length) {
-      return false;
-    }
-    else {
-      for (let i = 0; i < _args.length; i++) {
-        if (!cast(args[i], _args[i])) {
-          return false;
-        }
-      }
-      return true;
-    }
-  }
-  return {
-    type: FUNCTION,
+function tFunction(...variants) {
+  variants = variants.map(({ args, res, fn, readable }) => ({
     args,
     res,
-    fn(...args) {
-      if (!checkArgs(...args)) {
+    fn(..._args) {
+      if (_args.length !== args.length) {
         return undefined;
       }
-      else if (fn) {
-        return fn(...args);
+      for (let i = 0; i < _args.length; i++) {
+        if (!cast(args[i], _args[i])) {
+          return undefined;
+        }
+      }
+      if (fn) {
+        return fn(..._args);
       }
       else {
         return res;
       }
     },
     readable
+  }));
+  return {
+    type: FUNCTION,
+    variants
   };
 }
 

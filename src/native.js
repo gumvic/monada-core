@@ -1,8 +1,10 @@
 const {
+  tAny: { value: tAny },
+  tUndefined: { value: tUndefined },
+  tNull: { value: tNull },
   tNumber: { value: tNumber },
   tString: { value: tString },
-  tFunction: { value: tFunction },
-  tAnd: { value: tAnd } } = require("./types");
+  tFunction: { value: tFunction } } = require("./types");
 
 function $typeof(x) {
   return typeof x;
@@ -150,11 +152,40 @@ function $and$and(x, y) {
 
 module.exports = {
   "+": {
-    type: tAnd(
-      tFunction([tNumber, tNumber], tNumber, ({ value: a }, { value: b }) =>
-        a !== undefined && b != undefined ? tNumber(a + b) : tNumber),
-      tFunction([tString, tString], tString, ({ value: a }, { value: b }) =>
-        a !== undefined && b != undefined ? tString(a + b) : tString)),
+    type: tFunction(
+      {
+        args: [tUndefined, tUndefined],
+        res: tNumber(NaN)
+      },
+      {
+        args: [tUndefined, tNumber],
+        res: tNumber(NaN)
+      },
+      {
+        args: [tNumber, tUndefined],
+        res: tNumber(NaN)
+      },
+      {
+        args: [tNull, tNull],
+        res: tNumber
+      },
+      {
+        args: [tNull, tNumber],
+        res: tNumber
+      },
+      {
+        args: [tNumber, tNull],
+        res: tNumber
+      },
+      {
+        args: [tNumber, tNumber],
+        res: tNumber
+      },
+      {
+        args: [tAny, tAny],
+        res: tString
+      }
+    ),
     value: $plus
   }
 };
