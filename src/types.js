@@ -91,7 +91,32 @@ function cast(to, from) {
 }
 
 function match(type, value) {
-  // TODO
+  switch(type.type) {
+    case NONE: return true;
+    case ANY: return true;
+    case UNDEFINED: return value === undefined;
+    case NULL: return value === null;
+    case BOOLEAN: return type.value ? type.value === value : typeof value === "boolean";
+    case NUMBER: return type.value ? type.value === value : typeof value === "number";
+    case STRING: return type.value ? type.value === value : typeof value === "string";
+    // TODO typeof value === "function" -- and that's all?
+    case FUNCTION: return typeof value === "function";
+    case AND:
+      for (let _type of type.types) {
+        if (!match(_type, value)) {
+          return false;
+        }
+      }
+      return true;
+    case OR:
+      for (let _type of type.types) {
+        if (match(_type, value)) {
+          return true;
+        }
+      }
+      return false;
+    default: return false;
+  }
 }
 
 function readable(type) {
