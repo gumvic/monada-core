@@ -83,6 +83,7 @@ function cast(to, from) {
         return false;
       }
     }
+    return true;
   }
   else {
     return false;
@@ -184,6 +185,11 @@ function tFunction(...variants) {
   };
 }
 
+function tFn(...args) {
+  const res = args.pop();
+  return tFunction({ args, res });
+}
+
 function tAnd(...types) {
   return {
     type: AND,
@@ -282,6 +288,10 @@ module.exports = {
   tFunction: {
     type: tNone,
     value: tFunction
+  },
+  tFn: {
+    type: tNone,
+    value: tFn
   },
   tAnd: {
     type: tNone,
