@@ -42,24 +42,20 @@ function map(coll) {
 
 module.exports = {
   "==": {
-    type: tFunction({
-      args: [tAny, tAny],
-      res: tBoolean,
-      fn({ type: aType, value: aValue }, { type: bType, value: bValue }) {
-        if (
-          aType === bType &&
-          aValue !== undefined && bValue !== undefined &&
-          aValue === bValue) {
-          return tBoolean(true);
-        }
-        else if (
-          aType !== bType ||
-          aValue !== bValue) {
-          return tBoolean(false);
-        }
-        else {
-          return tBoolean;
-        }
+    type: tFunction(tAny, tAny, ({ type: aType, value: aValue }, { type: bType, value: bValue }) => {
+      if (
+        aType === bType &&
+        aValue !== undefined && bValue !== undefined &&
+        aValue === bValue) {
+        return tBoolean(true);
+      }
+      else if (
+        aType !== bType ||
+        aValue !== bValue) {
+        return tBoolean(false);
+      }
+      else {
+        return tBoolean;
       }
     }),
     value: $equals$equals
