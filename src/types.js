@@ -1,3 +1,5 @@
+//const get
+
 const NONE = "none";
 const ANY = "any";
 const UNDEFINED = "undefined";
@@ -163,33 +165,34 @@ function tString(value) {
 }
 tString.type = STRING;
 
-function tFunction(...args) {
-  function checkArgs(..._args) {
-    if (_args.length !== args.length) {
-      return false;
-    }
-    for (let i = 0; i < _args.length; i++) {
-      if (!cast(args[i], _args[i])) {
-        return false;
-      }
-    }
-    return true;
-  }
-  const resOrFn = args.pop();
-  const isFn = typeof resOrFn === "function" && !resOrFn.type;
-  const res = isFn ? resOrFn(...args) : resOrFn;
-  const fn = isFn ?
-    (...args) => checkArgs(...args) && resOrFn(...args) :
-    (...args) => checkArgs(...args) && resOrFn;
-  const readable = isFn && resOrFn.readable;
+function tFunction(args, res, fn, readable) {
+  // TODO use toJS
+  args = (args.toJS && args.toJS()) || args;
+  fn = fn || ((..._) => res);
   return {
     type: FUNCTION,
     args,
     res,
-    fn,
+    fn(..._args) {
+      if (_args.length !== args.length) {
+        return undefined;
+      }
+      for (let i = 0; i < _args.length; i++) {
+        if (!cast(args[i], _args[i])) {
+          return undefined;
+        }
+      }
+      return fn(..._args);
+    },
     readable
   };
 }
+// TODO tFunction should represent any function?
+// or simply let cast deal with the fact that args/res/fn might be empty, like for tNumber a value might be empty?
+//tFunction.type = FUNCTION;
+//tFunction.args = ?
+//tFunction.res = tNone;
+//tFunction.fn = (..._) => tNone;
 
 function tAnd(...types) {
   return {

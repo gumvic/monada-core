@@ -42,7 +42,7 @@ function map(coll) {
 
 module.exports = {
   "==": {
-    type: tFunction(tAny, tAny, ({ type: aType, value: aValue }, { type: bType, value: bValue }) => {
+    type: tFunction([tAny, tAny], tAny, ({ type: aType, value: aValue }, { type: bType, value: bValue }) => {
       if (
         aType === bType &&
         aValue !== undefined && bValue !== undefined &&

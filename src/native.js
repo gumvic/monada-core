@@ -151,8 +151,8 @@ function $and$and(x, y) {
 module.exports = {
   "+": {
     type: tAnd(
-      tFunction(tNumber, tNumber, tNumber),
-      tFunction(tString, tString, tString)),
+      tFunction([tNumber, tNumber], tNumber),
+      tFunction([tString, tString], tString)),
     value: $plus
   }
 };
