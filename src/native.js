@@ -1,8 +1,9 @@
 const {
-  tNumber: { value: tNumber },
-  tString: { value: tString },
-  tFunction: { value: tFunction },
-  tAnd: { value: tAnd } } = require("./types");
+  "type-number": { value: typeNumber },
+  "type-string": { value: typeString },
+  "type-function": { value: typeFunction },
+  "type-and": { value: typeAnd }
+} = require("./types");
 
 function $typeof(x) {
   return typeof x;
@@ -150,9 +151,9 @@ function $and$and(x, y) {
 
 module.exports = {
   "+": {
-    type: tAnd(
-      tFunction([tNumber, tNumber], tNumber),
-      tFunction([tString, tString], tString)),
+    type: typeAnd(
+      typeFunction([typeNumber, typeNumber], typeNumber),
+      typeFunction([typeString, typeString], typeString)),
     value: $plus
   }
 };

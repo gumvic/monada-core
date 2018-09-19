@@ -1,5 +1,3 @@
-//const get
-
 const NONE = "none";
 const ANY = "any";
 const UNDEFINED = "undefined";
@@ -11,7 +9,7 @@ const FUNCTION = "function";
 const AND = "and";
 const OR = "or";
 
-function cast(to, from) {
+function castType(to, from) {
   if (to.type === NONE ||
       from.type === NONE) {
     return true;
@@ -21,7 +19,7 @@ function cast(to, from) {
   }
   else if (to.type === AND) {
     for (let _to of to.types) {
-      if (!cast(_to, from)) {
+      if (!castType(_to, from)) {
         return false;
       }
     }
@@ -29,7 +27,7 @@ function cast(to, from) {
   }
   else if (from.type === AND) {
     for (let _from of from.types) {
-      if (cast(to, _from)) {
+      if (castType(to, _from)) {
         return true;
       }
     }
@@ -37,7 +35,7 @@ function cast(to, from) {
   }
   else if (to.type === OR) {
     for (let _to of to.types) {
-      if (cast(_to, from)) {
+      if (castType(_to, from)) {
         return true;
       }
     }
@@ -45,7 +43,7 @@ function cast(to, from) {
   }
   else if (from.type === OR) {
     for (let _from of from.types) {
-      if (!cast(to, _from)) {
+      if (!castType(to, _from)) {
         return false;
       }
     }
@@ -73,14 +71,15 @@ function cast(to, from) {
     to.type === FUNCTION &&
     from.type === FUNCTION) {
     const fromRes = from.fn(...to.args);
-    return fromRes && cast(to.res, fromRes);
+    return fromRes && castType(to.res, fromRes);
   }
   else {
     return false;
   }
 }
 
-function match(type, value) {
+// TODO better name
+function matchType(type, value) {
   switch(type.type) {
     case NONE: return true;
     case ANY: return true;
@@ -109,65 +108,99 @@ function match(type, value) {
   }
 }
 
-function readable(type) {
-  switch(type.type) {
-    case NONE: return "_";
-    case ANY: return "*";
-    case UNDEFINED: return "undefined";
-    case NULL: return "null";
-    case BOOLEAN: return type.value ? `boolean(${type.value})` : `boolean`;
-    case NUMBER: return type.value ? `number(${type.value})` : `number`;
-    case STRING: return type.value ? `string(${type.value})` : `string`;
-    case FUNCTION: return type.readable || `fn(${type.args.map(readable).join(", ")}) -> ${readable(type.res)}`;
-    case AND: return `(${type.types.map(readable).join(" & ")})`;
-    case OR: return `(${type.types.map(readable).join(" | ")})`;
-    default: return "";
+const typeNone = {
+  type: NONE,
+  toString() {
+    return "?";
   }
+};
+
+function isTypeNone({ type }) {
+  return type === NONE;
 }
 
-const tNone = {
-  type: NONE
+const typeAny = {
+  type: ANY,
+  toString() {
+    return "*";
+  }
 };
 
-const tAny = {
-  type: ANY
+function isTypeAny({ type }) {
+  return type === ANY;
+}
+
+const typeUndefined = {
+  type: UNDEFINED,
+  toString() {
+    return "undefined";
+  }
 };
 
-const tUndefined = {
-  type: UNDEFINED
+function isTypeUndefined({ type }) {
+  return type === UNDEFINED;
+}
+
+const typeNull = {
+  type: NULL,
+  toString() {
+    return "null";
+  }
 };
 
-const tNull = {
-  type: NULL
-};
+function isTypeNull({ type }) {
+  return type === NULL;
+}
 
-function tBoolean(value) {
+function typeBoolean(value) {
   return {
     type: BOOLEAN,
-    value
+    value,
+    toString() {
+      return value ? `boolean(${value})` : "boolean";
+    }
   };
 }
-tBoolean.type = BOOLEAN;
+typeBoolean.type = BOOLEAN;
+typeBoolean.toString = () => "boolean";
 
-function tNumber(value) {
+function isTypeBoolean({ type }) {
+  return type === BOOLEAN;
+}
+
+function typeNumber(value) {
   return {
     type: NUMBER,
-    value
+    value,
+    toString() {
+      return value ? `number(${value})` : "number";
+    }
   };
 }
-tNumber.type = NUMBER;
+typeNumber.type = NUMBER;
+typeNumber.toString = () => "number";
 
-function tString(value) {
+function isTypeNumber({ type }) {
+  return type === NUMBER;
+}
+
+function typeString(value) {
   return {
     type: STRING,
-    value
+    value,
+    toString() {
+      return value ? `string(${value})` : "string";
+    }
   };
 }
-tString.type = STRING;
+typeString.type = STRING;
+typeString.toString = () => "string";
 
-function tFunction(args, res, fn, readable) {
-  // TODO use toJS
-  args = (args.toJS && args.toJS()) || args;
+function isTypeString({ type }) {
+  return type === STRING;
+}
+
+function typeFunction(args, res, fn, readable) {
   fn = fn || ((..._) => res);
   return {
     type: FUNCTION,
@@ -178,127 +211,143 @@ function tFunction(args, res, fn, readable) {
         return undefined;
       }
       for (let i = 0; i < _args.length; i++) {
-        if (!cast(args[i], _args[i])) {
+        if (!castType(args[i], _args[i])) {
           return undefined;
         }
       }
       return fn(..._args);
     },
-    readable
+    toString() {
+      return readable || `fn(${args.join(", ")}) -> ${res}`;
+    }
   };
 }
-// TODO tFunction should represent any function?
-// or simply let cast deal with the fact that args/res/fn might be empty, like for tNumber a value might be empty?
-//tFunction.type = FUNCTION;
-//tFunction.args = ?
-//tFunction.res = tNone;
-//tFunction.fn = (..._) => tNone;
+// TODO typeFunction should represent any function?
+// or simply let cast deal with the fact that args/res/fn might be empty, like for typeNumber a value might be empty?
+//typeFunction.type = FUNCTION;
+//typeFunction.args = ?
+//typeFunction.res = typeNone;
+//typeFunction.fn = (..._) => typeNone;
 
-function tAnd(...types) {
+function isTypeFunction({ type }) {
+  return type === FUNCTION;
+}
+
+function typeAnd(...types) {
   return {
     type: AND,
-    types
+    types,
+    toString() {
+      return `(${types.map(readable).join(" & ")})`;
+    }
   };
 }
 
-function tOr(...types) {
+function isTypeAnd({ type }) {
+  return type === AND;
+}
+
+function typeOr(...types) {
   return {
     type: OR,
-    types
+    types,
+    toString() {
+      return `(${types.map(readable).join(" | ")})`;
+    }
   };
+}
+
+function isTypeOr({ type }) {
+  return type === OR;
 }
 
 module.exports = {
-  cast: {
-    type: tNone,
-    value: cast
+  "cast-type": {
+    type: typeNone,
+    value: castType
   },
-  match: {
-    type: tNone,
-    value: match
+  "match-type": {
+    type: typeNone,
+    value: matchType
   },
-  readable: {
-    type: tNone,
-    value: readable
+  "type-none?": {
+    type: typeNone,
+    value: isTypeNone
   },
-  NONE: {
-    type: tString,
-    value: NONE
+  "type-any?": {
+    type: typeNone,
+    value: isTypeAny
   },
-  ANY: {
-    type: tString,
-    value: ANY
+  "type-undefined?": {
+    type: typeNone,
+    value: isTypeUndefined
   },
-  UNDEFINED: {
-    type: tString,
-    value: UNDEFINED
+  "type-null?": {
+    type: typeNone,
+    value: isTypeNull
   },
-  NULL: {
-    type: tString,
-    value: NULL
+  "type-boolean?": {
+    type: typeNone,
+    value: isTypeBoolean
   },
-  BOOLEAN: {
-    type: tString,
-    value: BOOLEAN
+  "type-number?": {
+    type: typeNone,
+    value: isTypeNumber
   },
-  NUMBER: {
-    type: tString,
-    value: NUMBER
+  "type-string?": {
+    type: typeNone,
+    value: isTypeString
   },
-  STRING: {
-    type: tString,
-    value: STRING
+  "type-function?": {
+    type: typeNone,
+    value: isTypeFunction
   },
-  FUNCTION: {
-    type: tString,
-    value: FUNCTION
+  "type-and?": {
+    type: typeNone,
+    value: isTypeAnd
   },
-  AND: {
-    type: tString,
-    value: AND
+  "type-or?": {
+    type: typeNone,
+    value: isTypeOr
   },
-  OR: {
-    type: tString,
-    value: OR
+  "type-none": {
+    type: typeNone,
+    value: typeNone
   },
-  tNone: {
-    type: tNone,
-    value: tNone
+  "type-any": {
+    type: typeNone,
+    value: typeAny
   },
-  tAny: {
-    type: tNone,
-    value: tAny
+  "type-undefined": {
+    type: typeNone,
+    value: typeUndefined
   },
-  tUndefined: {
-    type: tNone,
-    value: tUndefined
+  "type-null": {
+    type: typeNone,
+    value: typeNull
   },
-  tNull: {
-    type: tNone,
-    value: tNull
+  "type-boolean": {
+    type: typeNone,
+    value: typeBoolean
   },
-  tBoolean: {
-    type: tNone,
-    value: tBoolean
+  "type-number": {
+    type: typeNone,
+    value: typeNumber
   },
-  tNumber: {
-    type: tNone,
-    value: tNumber
+  "type-string": {
+    type: typeNone,
+    value: typeString
   },
-  tString: {
-    type: tNone,
-    value: tString
+  "type-function": {
+    type: typeNone,
+    value: typeFunction
   },
-  tFunction: {
-    type: tNone,
-    value: tFunction
+  "type-and": {
+    type: typeNone,
+    value: typeAnd
   },
-  tAnd: {
-    type: tNone,
-    value: tAnd
-  },
-  tOr: {
-    type: tNone,
-    value: tOr
+  "type-or": {
+    type: typeNone,
+    value: typeOr
   }
 };

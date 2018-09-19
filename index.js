@@ -6,5 +6,5 @@ module.exports = {
   $monada: true,
   ...types,
   ...native,
-  ...data
+  ...repl
 };
